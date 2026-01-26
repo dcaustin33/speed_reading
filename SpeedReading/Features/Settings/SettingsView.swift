@@ -3,8 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var router: NavigationRouter
 
-    @State private var fontSize: Double = 48
-    @State private var wordSkip: Double = 5
+    @State private var viewModel = SettingsViewModel()
 
     var body: some View {
         ZStack {
@@ -24,15 +23,17 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(Theme.Colors.secondaryText)
 
-                        Slider(value: $fontSize, in: 24...96, step: 1)
+                        Slider(value: $viewModel.fontSize, in: 24...96, step: 1)
                             .tint(Theme.Colors.accent)
+                            .accessibilityLabel("Font size")
+                            .accessibilityValue(viewModel.fontSizeFormatted)
 
                         Text("96pt")
                             .font(.caption)
                             .foregroundStyle(Theme.Colors.secondaryText)
                     }
 
-                    Text("\(Int(fontSize))pt")
+                    Text(viewModel.fontSizeFormatted)
                         .font(.subheadline)
                         .foregroundStyle(Theme.Colors.primaryText)
                 }
@@ -54,15 +55,17 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(Theme.Colors.secondaryText)
 
-                        Slider(value: $wordSkip, in: 1...20, step: 1)
+                        Slider(value: $viewModel.wordSkip, in: 1...20, step: 1)
                             .tint(Theme.Colors.accent)
+                            .accessibilityLabel("Word skip amount")
+                            .accessibilityValue(viewModel.wordSkipFormatted)
 
                         Text("20")
                             .font(.caption)
                             .foregroundStyle(Theme.Colors.secondaryText)
                     }
 
-                    Text("\(Int(wordSkip)) words")
+                    Text(viewModel.wordSkipFormatted)
                         .font(.subheadline)
                         .foregroundStyle(Theme.Colors.primaryText)
                 }
@@ -86,6 +89,8 @@ struct SettingsView: View {
                     }
                     .foregroundStyle(Theme.Colors.accent)
                 }
+                .accessibilityLabel("Back")
+                .accessibilityHint("Return to menu")
             }
         }
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)

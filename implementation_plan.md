@@ -1082,8 +1082,39 @@ Build the TOC screen for EPUB navigation.
 
 ---
 
-### - [ ] Task 16: Settings Screen
+### - [x] Task 16: Settings Screen
 Build the settings screen with font and word skip configuration.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/SettingsViewModelTests.swift` (22 tests, all passing, tests deleted after verification)
+- **Implementation**:
+  - `SettingsViewModel` class with @Observable macro:
+    - Loads font size and word skip from LibraryDataService on init
+    - Auto-saves to library.json on any value change (immediate persistence)
+    - `fontSize` property (Double, 24-96pt range)
+    - `wordSkip` property (Double, 1-20 range)
+    - `fontSizeFormatted` computed property ("48pt" format)
+    - `wordSkipFormatted` computed property ("5 words" / "1 word" singular/plural)
+  - Updated `SettingsView`:
+    - Uses SettingsViewModel instead of local @State
+    - Font Size slider with 24-96pt range, step 1
+    - Word Skip slider with 1-20 range, step 1
+    - Current values displayed below each slider
+    - Accessibility labels and values for both sliders
+    - Back button with accessibility hint
+    - Dark theme using Theme colors
+  - Settings are global and apply to all books per spec
+- **Files created**:
+  - `SpeedReading/Features/Settings/SettingsViewModel.swift`
+- **Files modified**:
+  - `SpeedReading/Features/Settings/SettingsView.swift` (complete rewrite with ViewModel)
+  - `SpeedReading.xcodeproj/project.pbxproj` (added SettingsViewModel to Settings group and build)
+- **Notes**:
+  - SettingsViewModel integrates with existing LibraryDataService for persistence
+  - Settings model auto-clamps values to valid ranges
+  - Immediate apply: changes persist as soon as slider is adjusted
+  - Integration with PlaybackEngine: wordSkip setting is read by ReaderViewModel when opening menu
+  - Integration with ORPDisplayView: fontSize setting is read by ReaderViewModel.fontSize property
 
 **Scope:**
 - Implement settings screen layout:
