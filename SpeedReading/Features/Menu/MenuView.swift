@@ -109,7 +109,7 @@ struct MenuView: View {
                     step: 0.25,
                     minLabel: "0.25s",
                     maxLabel: "3.0s",
-                    valueLabel: String(format: "%.2fs", paragraphPause.wrappedValue)
+                    valueLabel: formatPause(paragraphPause.wrappedValue)
                 )
 
                 Divider()
@@ -153,6 +153,20 @@ struct MenuView: View {
         .accessibilityLabel(label)
     }
 
+    /// Formats pause value with consistent decimal places (1.0s, 1.25s, etc.)
+    private func formatPause(_ value: Double) -> String {
+        if value == Double(Int(value)) {
+            return String(format: "%.1fs", value)
+        } else if value * 4 == Double(Int(value * 4)) {
+            // Value is a multiple of 0.25
+            if value * 10 == Double(Int(value * 10)) {
+                return String(format: "%.1fs", value)
+            }
+            return String(format: "%.2fs", value)
+        }
+        return String(format: "%.2fs", value)
+    }
+
     private func sliderSection(
         title: String,
         value: Binding<Double>,
@@ -175,6 +189,8 @@ struct MenuView: View {
 
                 Slider(value: value, in: range, step: step)
                     .tint(Theme.Colors.accent)
+                    .accessibilityLabel(title)
+                    .accessibilityValue(valueLabel)
 
                 Text(maxLabel)
                     .font(.caption)
