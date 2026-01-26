@@ -4,7 +4,7 @@ enum Route: Hashable {
     case reader(bookId: UUID)
     case settings
     case search(bookId: UUID)
-    case toc(bookId: UUID)
+    case toc(bookId: UUID, currentWordIndex: Int)
 }
 
 @MainActor

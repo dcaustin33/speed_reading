@@ -1,51 +1,35 @@
 import SwiftUI
 
+/// Table of Contents screen for EPUB navigation.
+/// Displays chapter list with current chapter indicator.
+/// Per spec (Section 4.5): Only shown for EPUB files with TOC.
 struct TOCView: View {
     @EnvironmentObject var router: NavigationRouter
-    let bookId: UUID
 
-    // Placeholder chapters
-    @State private var chapters: [ChapterPlaceholder] = [
-        ChapterPlaceholder(title: "Cover", isCurrent: false),
-        ChapterPlaceholder(title: "Chapter 1: The Beginning", isCurrent: false),
-        ChapterPlaceholder(title: "Chapter 2: Rising Action", isCurrent: true),
-        ChapterPlaceholder(title: "Chapter 3: The Climax", isCurrent: false),
-        ChapterPlaceholder(title: "Chapter 4: Resolution", isCurrent: false),
-        ChapterPlaceholder(title: "Epilogue", isCurrent: false),
-    ]
+    let bookId: UUID
+    let currentWordIndex: Int
+
+    @State private var viewModel: TOCViewModel?
 
     var body: some View {
         ZStack {
             Theme.Colors.background
                 .ignoresSafeArea()
 
-            ScrollView {
-                LazyVStack(spacing: 0) {
-                    ForEach(chapters) { chapter in
-                        Button {
-                            // TODO: Jump to chapter
-                            router.pop()
-                        } label: {
-                            HStack {
-                                Text(chapter.title)
-                                    .font(.body)
-                                    .foregroundStyle(Theme.Colors.primaryText)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                                if chapter.isCurrent {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(Theme.Colors.accent)
-                                }
-                            }
-                            .padding()
-                            .background(Theme.Colors.cardBackground)
-                        }
-
-                        Divider()
-                            .background(Theme.Colors.trackGray)
-                    }
+            if let viewModel = viewModel {
+                if viewModel.isLoading {
+                    ProgressView()
+                        .tint(Theme.Colors.accent)
+                } else if let error = viewModel.errorMessage {
+                    errorView(error)
+                } else if viewModel.hasChapters {
+                    chapterList(viewModel: viewModel)
+                } else {
+                    emptyView
                 }
-                .padding(.top)
+            } else {
+                ProgressView()
+                    .tint(Theme.Colors.accent)
             }
         }
         .navigationTitle("Contents")
@@ -62,22 +46,136 @@ struct TOCView: View {
                     }
                     .foregroundStyle(Theme.Colors.accent)
                 }
+                .accessibilityLabel("Back to menu")
             }
         }
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .onAppear {
+            if viewModel == nil {
+                let vm = TOCViewModel(bookId: bookId, currentWordIndex: currentWordIndex)
+                viewModel = vm
+                vm.loadChapters()
+            }
+        }
+    }
+
+    // MARK: - Chapter List
+
+    @ViewBuilder
+    private func chapterList(viewModel: TOCViewModel) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 0) {
+                    ForEach(Array(viewModel.chapters.enumerated()), id: \.offset) { index, chapter in
+                        let isCurrent = viewModel.currentChapterIndex == index
+
+                        Button {
+                            viewModel.selectChapter(at: index)
+                            // Navigate back to reader with jump position
+                            // Pop to menu, then menu dismisses back to reader
+                            router.popToRoot()
+                            router.navigateTo(.reader(bookId: bookId))
+                        } label: {
+                            chapterRow(chapter: chapter, isCurrent: isCurrent)
+                        }
+                        .id(index)
+                        .accessibilityLabel("\(chapter.title)\(isCurrent ? ", current chapter" : "")")
+                        .accessibilityHint("Double tap to jump to this chapter")
+
+                        if index < viewModel.chapters.count - 1 {
+                            Divider()
+                                .background(Theme.Colors.trackGray)
+                        }
+                    }
+                }
+                .padding(.top)
+            }
+            .onAppear {
+                // Scroll to current chapter if exists
+                if let currentIndex = viewModel.currentChapterIndex {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation {
+                            proxy.scrollTo(currentIndex, anchor: .center)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func chapterRow(chapter: Chapter, isCurrent: Bool) -> some View {
+        HStack {
+            Text(chapter.title)
+                .font(.body)
+                .foregroundStyle(Theme.Colors.primaryText)
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if isCurrent {
+                Image(systemName: "checkmark")
+                    .foregroundStyle(Theme.Colors.accent)
+                    .accessibilityHidden(true)
+            }
+        }
+        .padding()
+        .background(Theme.Colors.cardBackground)
+    }
+
+    // MARK: - Empty State
+
+    private var emptyView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "list.bullet.rectangle")
+                .font(.system(size: 48))
+                .foregroundStyle(Theme.Colors.secondaryText)
+
+            Text("No chapters found")
+                .font(.headline)
+                .foregroundStyle(Theme.Colors.primaryText)
+
+            Text("This book does not have a table of contents.")
+                .font(.subheadline)
+                .foregroundStyle(Theme.Colors.secondaryText)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+    }
+
+    // MARK: - Error State
+
+    @ViewBuilder
+    private func errorView(_ message: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 48))
+                .foregroundStyle(Theme.Colors.secondaryText)
+
+            Text("Could not load chapters")
+                .font(.headline)
+                .foregroundStyle(Theme.Colors.primaryText)
+
+            Text(message)
+                .font(.subheadline)
+                .foregroundStyle(Theme.Colors.secondaryText)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
     }
 }
 
-struct ChapterPlaceholder: Identifiable {
-    let id = UUID()
-    let title: String
-    let isCurrent: Bool
+#Preview("With Chapters") {
+    NavigationStack {
+        TOCView(bookId: UUID(), currentWordIndex: 500)
+            .environmentObject(NavigationRouter())
+    }
 }
 
-#Preview {
+#Preview("Empty") {
     NavigationStack {
-        TOCView(bookId: UUID())
+        TOCView(bookId: UUID(), currentWordIndex: 0)
             .environmentObject(NavigationRouter())
     }
 }

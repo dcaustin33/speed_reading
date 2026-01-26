@@ -215,11 +215,14 @@ class ReaderViewModel {
             let document = TokenizerService.tokenize(text: content, chapters: chapters)
             self.document = document
 
-            // Check for search jump position first (takes priority)
+            // Check for search or TOC jump position first (takes priority)
             var resumeIndex: Int
             if let searchJumpIndex = SearchViewModel.getAndClearJumpPosition(for: bookId) {
                 // Jump directly to searched position (no paragraph alignment per spec)
                 resumeIndex = min(searchJumpIndex, max(0, document.totalWords - 1))
+            } else if let tocJumpIndex = TOCViewModel.getAndClearJumpPosition(for: bookId) {
+                // Jump directly to chapter start (no paragraph alignment needed, it's already at chapter start)
+                resumeIndex = min(tocJumpIndex, max(0, document.totalWords - 1))
             } else {
                 // Normal resume: use saved position
                 resumeIndex = book.currentWordIndex

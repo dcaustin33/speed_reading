@@ -1004,8 +1004,53 @@ Implement in-book search functionality.
 
 ---
 
-### - [ ] Task 15: Table of Contents Screen
+### - [x] Task 15: Table of Contents Screen
 Build the TOC screen for EPUB navigation.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/TOCViewModelTests.swift` (21 tests, all passing, tests deleted after verification)
+- **Implementation**:
+  - `TOCViewModel` class with @Observable macro:
+    - Loads chapters via `LibraryDataService.loadChapters(for:)`
+    - Current chapter detection: finds chapter whose startWordIndex <= currentWordIndex
+    - Jump position storage via UserDefaults (same pattern as SearchViewModel)
+    - `getAndClearJumpPosition(for:)` static method for reader integration
+  - `LibraryDataService` extensions:
+    - `chaptersDirectory` property for Chapters/{uuid}.json storage
+    - `loadChapters(for:)` method to retrieve stored chapters
+    - Updated `importBook` to save chapters to Chapters/{uuid}.json
+    - Updated `deleteBook` to remove chapters file
+    - Added `book(for:)` alias method
+  - `TOCView` complete rewrite:
+    - Dark theme UI matching app (background, card colors)
+    - Loading state with spinner
+    - Error state with message
+    - Empty state: "No chapters found" message
+    - Scrollable LazyVStack of chapter rows
+    - Current chapter indicated with blue checkmark
+    - Auto-scroll to current chapter on appear
+    - Back button returns to menu
+    - Tap chapter → stores jump position → popToRoot → navigateTo(.reader)
+    - Accessibility labels and hints
+  - `Route.toc` updated to include `currentWordIndex` parameter
+  - `ContentView` updated to pass `currentWordIndex` to TOCView
+  - `MenuView` updated to pass `currentWordIndex` when navigating to TOC
+  - `ReaderViewModel.loadBook()` updated to check `TOCViewModel.getAndClearJumpPosition`
+- **Files created**:
+  - `SpeedReading/Features/TOC/TOCViewModel.swift`
+- **Files modified**:
+  - `SpeedReading/Features/TOC/TOCView.swift` (complete rewrite)
+  - `SpeedReading/Services/Library/LibraryDataService.swift` (chapter storage/retrieval)
+  - `SpeedReading/App/NavigationRouter.swift` (Route.toc with currentWordIndex)
+  - `SpeedReading/App/ContentView.swift` (TOCView destination)
+  - `SpeedReading/Features/Menu/MenuView.swift` (pass currentWordIndex)
+  - `SpeedReading/Features/Reader/ReaderViewModel.swift` (TOC jump detection)
+  - `SpeedReading.xcodeproj/project.pbxproj` (added TOCViewModel to build)
+- **Notes**:
+  - Per spec Section 4.5: TOC only shown for EPUB files with hasTOC = true
+  - Per spec Section 3.6: Tap chapter → jump to start, close TOC, close menu, stay paused
+  - Nested TOC items not explicitly supported (flat structure only); can be enhanced in future
+  - Build verification blocked by sandbox restrictions (xcodebuild requires CoreSimulatorService)
 
 **Scope:**
 - Implement TOC screen layout:

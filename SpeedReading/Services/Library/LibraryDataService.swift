@@ -10,6 +10,7 @@ final class LibraryDataService {
     private let storageURL: URL
     private let booksDirectory: URL
     private let coversDirectory: URL
+    private let chaptersDirectory: URL
     private let fileManager = FileManager.default
 
     // MARK: - Initialization
@@ -19,11 +20,13 @@ final class LibraryDataService {
         self.storageURL = storageURL
         self.booksDirectory = storageURL.appendingPathComponent("Books")
         self.coversDirectory = storageURL.appendingPathComponent("Covers")
+        self.chaptersDirectory = storageURL.appendingPathComponent("Chapters")
         self.library = Library()
 
         // Create directories if needed
         try? fileManager.createDirectory(at: booksDirectory, withIntermediateDirectories: true)
         try? fileManager.createDirectory(at: coversDirectory, withIntermediateDirectories: true)
+        try? fileManager.createDirectory(at: chaptersDirectory, withIntermediateDirectories: true)
     }
 
     /// Create a LibraryDataService using the app's Documents directory
@@ -178,6 +181,15 @@ final class LibraryDataService {
             try coverData.write(to: coverURL)
         }
 
+        // Save chapters if available to Chapters/{uuid}.json
+        if let chapters = chapters, !chapters.isEmpty {
+            let chaptersURL = chaptersDirectory.appendingPathComponent("\(bookId.uuidString).json")
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted]
+            let chaptersData = try encoder.encode(chapters)
+            try chaptersData.write(to: chaptersURL)
+        }
+
         // Add to library and save
         library.books.append(book)
         try saveLibrary()
@@ -241,6 +253,10 @@ final class LibraryDataService {
         // Remove cover if exists
         let coverURL = coversDirectory.appendingPathComponent("\(bookId.uuidString).jpg")
         try? fileManager.removeItem(at: coverURL)
+
+        // Remove chapters if exists
+        let chaptersURL = chaptersDirectory.appendingPathComponent("\(bookId.uuidString).json")
+        try? fileManager.removeItem(at: chaptersURL)
 
         // Remove from library
         library.books.remove(at: bookIndex)
@@ -336,6 +352,37 @@ final class LibraryDataService {
     /// Get the file URL for a book's cover image
     func coverURL(for bookId: UUID) -> URL {
         coversDirectory.appendingPathComponent("\(bookId.uuidString).jpg")
+    }
+
+    /// Get the file URL for a book's chapters
+    func chaptersURL(for bookId: UUID) -> URL {
+        chaptersDirectory.appendingPathComponent("\(bookId.uuidString).json")
+    }
+
+    // MARK: - Chapter Access
+
+    /// Load chapters for a book (EPUB only).
+    /// Returns an empty array if the book has no chapters or if the chapters file doesn't exist.
+    func loadChapters(for bookId: UUID) -> [Chapter] {
+        let chaptersURL = chaptersDirectory.appendingPathComponent("\(bookId.uuidString).json")
+
+        guard fileManager.fileExists(atPath: chaptersURL.path) else {
+            return []
+        }
+
+        do {
+            let data = try Data(contentsOf: chaptersURL)
+            let decoder = JSONDecoder()
+            return try decoder.decode([Chapter].self, from: data)
+        } catch {
+            print("Failed to load chapters for book \(bookId): \(error)")
+            return []
+        }
+    }
+
+    /// Get a book by its ID (alias for byId)
+    func book(for id: UUID) -> Book? {
+        book(byId: id)
     }
 
     // MARK: - Sorting

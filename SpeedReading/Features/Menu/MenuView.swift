@@ -43,6 +43,10 @@ struct MenuView: View {
         viewModel?.wordSkip ?? 5
     }
 
+    private var currentWordIndex: Int {
+        viewModel?.currentWordIndex ?? 0
+    }
+
     var body: some View {
         ZStack {
             Theme.Colors.background.opacity(0.95)
@@ -127,7 +131,7 @@ struct MenuView: View {
                     if hasTOC {
                         menuItem(icon: "list.bullet", title: "Table of Contents") {
                             showMenu = false
-                            router.navigateTo(.toc(bookId: bookId))
+                            router.navigateTo(.toc(bookId: bookId, currentWordIndex: currentWordIndex))
                         }
                     }
 

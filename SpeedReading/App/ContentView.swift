@@ -14,8 +14,8 @@ struct ContentView: View {
                         SettingsView()
                     case .search(let bookId):
                         SearchView(bookId: bookId)
-                    case .toc(let bookId):
-                        TOCView(bookId: bookId)
+                    case .toc(let bookId, let currentWordIndex):
+                        TOCView(bookId: bookId, currentWordIndex: currentWordIndex)
                     }
                 }
         }
