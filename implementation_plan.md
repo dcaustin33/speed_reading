@@ -1,14 +1,21 @@
 # Speed Reading App - Implementation Plan
 
 ## Chunk 1: Enable Xcode Diagnostics
-- [ ] **Enable sanitizers and diagnostics before any testing**
-
-In Xcode: Edit Scheme → Run → Diagnostics:
-- Enable **Thread Sanitizer** (catches threading violations)
-- Enable **Zombie Objects** (catches use-after-free)
-- Enable **Address Sanitizer** (catches memory corruption)
-
-This will immediately surface issues when you run the app.
+- [x] **Enable sanitizers and diagnostics before any testing**
+  - ✅ Completed: 2026-01-26
+  - Implementation: Created shared Xcode scheme with all diagnostics pre-configured
+  - File created: `SpeedReading.xcodeproj/xcshareddata/xcschemes/SpeedReading.xcscheme`
+  - Diagnostics enabled:
+    - ✅ **Thread Sanitizer** (`enableThreadSanitizer = "YES"`)
+    - ✅ **Address Sanitizer** (`enableAddressSanitizer = "YES"`)
+    - ✅ **Zombie Objects** (`NSZombieEnabled = "YES"`)
+    - ✅ **MallocScribble** (fills freed memory with 0x55)
+    - ✅ **MallocGuardEdges** (adds guard pages around allocations)
+  - Notes:
+    - Address Sanitizer and Thread Sanitizer are mutually exclusive at runtime
+    - Xcode will use Thread Sanitizer by default; to use ASan, disable TSan in scheme
+    - Scheme is shared (in xcshareddata) so it's version-controlled and available to all developers
+  - Build verified: ✅ XML valid (scheme file verified with xmllint)
 
 ---
 
