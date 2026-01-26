@@ -1,12 +1,47 @@
 import SwiftUI
 
+/// Menu overlay with navigation controls, settings sliders, and menu items.
+/// When provided with a ReaderViewModel, controls are connected to actual playback.
 struct MenuView: View {
     @EnvironmentObject var router: NavigationRouter
     let bookId: UUID
     @Binding var showMenu: Bool
 
-    @State private var wpm: Double = 300
-    @State private var paragraphPause: Double = 1.0
+    /// Optional view model for connecting controls to playback
+    var viewModel: ReaderViewModel?
+
+    // Local state for when no viewModel is provided (preview mode)
+    @State private var localWpm: Double = 300
+    @State private var localParagraphPause: Double = 1.0
+
+    // Computed bindings that use viewModel when available
+    private var wpm: Binding<Double> {
+        if let vm = viewModel {
+            return Binding(
+                get: { Double(vm.wpm) },
+                set: { vm.wpm = Int($0) }
+            )
+        }
+        return $localWpm
+    }
+
+    private var paragraphPause: Binding<Double> {
+        if let vm = viewModel {
+            return Binding(
+                get: { vm.paragraphPause },
+                set: { vm.paragraphPause = $0 }
+            )
+        }
+        return $localParagraphPause
+    }
+
+    private var hasTOC: Bool {
+        viewModel?.hasTOC ?? false
+    }
+
+    private var wordSkip: Int {
+        viewModel?.wordSkip ?? 5
+    }
 
     var body: some View {
         ZStack {
@@ -31,12 +66,24 @@ struct MenuView: View {
 
                 // Navigation controls
                 HStack(spacing: 16) {
-                    navigationButton(symbol: "backward.end.fill", label: "Previous paragraph")
-                    navigationButton(symbol: "backward.fill", label: "Previous sentence")
-                    navigationButton(symbol: "chevron.left", label: "Rewind")
-                    navigationButton(symbol: "chevron.right", label: "Forward")
-                    navigationButton(symbol: "forward.fill", label: "Next sentence")
-                    navigationButton(symbol: "forward.end.fill", label: "Next paragraph")
+                    navigationButton(symbol: "backward.end.fill", label: "Previous paragraph") {
+                        viewModel?.previousParagraph()
+                    }
+                    navigationButton(symbol: "backward.fill", label: "Previous sentence") {
+                        viewModel?.previousSentence()
+                    }
+                    navigationButton(symbol: "chevron.left", label: "Rewind \(wordSkip) words") {
+                        viewModel?.skipBackward()
+                    }
+                    navigationButton(symbol: "chevron.right", label: "Forward \(wordSkip) words") {
+                        viewModel?.skipForward()
+                    }
+                    navigationButton(symbol: "forward.fill", label: "Next sentence") {
+                        viewModel?.nextSentence()
+                    }
+                    navigationButton(symbol: "forward.end.fill", label: "Next paragraph") {
+                        viewModel?.nextParagraph()
+                    }
                 }
                 .padding()
                 .background(Theme.Colors.cardBackground)
@@ -46,23 +93,23 @@ struct MenuView: View {
                 // WPM Slider
                 sliderSection(
                     title: "WPM",
-                    value: $wpm,
+                    value: wpm,
                     range: 100...800,
                     step: 25,
                     minLabel: "100",
                     maxLabel: "800",
-                    valueLabel: "\(Int(wpm))"
+                    valueLabel: "\(Int(wpm.wrappedValue))"
                 )
 
                 // Paragraph Pause Slider
                 sliderSection(
                     title: "Paragraph Pause",
-                    value: $paragraphPause,
+                    value: paragraphPause,
                     range: 0.25...3.0,
                     step: 0.25,
                     minLabel: "0.25s",
                     maxLabel: "3.0s",
-                    valueLabel: String(format: "%.2fs", paragraphPause)
+                    valueLabel: String(format: "%.2fs", paragraphPause.wrappedValue)
                 )
 
                 Divider()
@@ -76,10 +123,12 @@ struct MenuView: View {
                         router.navigateTo(.search(bookId: bookId))
                     }
 
-                    // TOC - only shown for EPUB (placeholder logic)
-                    menuItem(icon: "list.bullet", title: "Table of Contents") {
-                        showMenu = false
-                        router.navigateTo(.toc(bookId: bookId))
+                    // TOC - only shown for EPUB with TOC
+                    if hasTOC {
+                        menuItem(icon: "list.bullet", title: "Table of Contents") {
+                            showMenu = false
+                            router.navigateTo(.toc(bookId: bookId))
+                        }
                     }
 
                     menuItem(icon: "gearshape", title: "Settings") {
@@ -94,10 +143,8 @@ struct MenuView: View {
         .presentationBackground(Theme.Colors.background.opacity(0.95))
     }
 
-    private func navigationButton(symbol: String, label: String) -> some View {
-        Button {
-            // TODO: Implement navigation
-        } label: {
+    private func navigationButton(symbol: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
             Image(systemName: symbol)
                 .font(.title3)
                 .foregroundStyle(Theme.Colors.primaryText)

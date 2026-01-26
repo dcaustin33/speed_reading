@@ -1,120 +1,181 @@
 import SwiftUI
+import UIKit
 
+/// Main reading screen with ORP display, playback controls, and progress tracking.
 struct ReaderView: View {
     @EnvironmentObject var router: NavigationRouter
     let bookId: UUID
 
-    @State private var isPlaying = false
+    @State private var viewModel: ReaderViewModel
     @State private var showMenu = false
-    @State private var progress: Double = 0.35
+
+    // Haptic feedback generator for sentence boundaries
+    private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
+
+    init(bookId: UUID) {
+        self.bookId = bookId
+        self._viewModel = State(wrappedValue: ReaderViewModel(bookId: bookId))
+    }
 
     var body: some View {
         ZStack {
             Theme.Colors.background
                 .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // Main content area - tap to toggle play/pause
-                Button {
-                    isPlaying.toggle()
-                } label: {
-                    VStack {
-                        Spacer()
-
-                        // ORP Display placeholder
-                        HStack(spacing: 0) {
-                            Text("extra")
-                                .foregroundStyle(Theme.Colors.primaryText)
-                            Text("o")
-                                .foregroundStyle(Theme.Colors.orpHighlight)
-                            Text("rdinary")
-                                .foregroundStyle(Theme.Colors.primaryText)
-                        }
-                        .font(Theme.Fonts.orpDisplay(size: Theme.Layout.defaultFontSize))
-
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-
-                // Bottom controls area
-                VStack(spacing: 8) {
-                    // Progress bar
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            // Track
-                            Rectangle()
-                                .fill(Theme.Colors.trackGray)
-                                .frame(height: Theme.Layout.progressBarHeight)
-
-                            // Fill
-                            Rectangle()
-                                .fill(Theme.Colors.accent)
-                                .frame(width: geometry.size.width * progress, height: Theme.Layout.progressBarHeight)
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
-                    }
-                    .frame(height: Theme.Layout.progressBarHeight)
-                    .accessibilityValue("\(Int(progress * 100)) percent complete")
-
-                    // Stats bar
-                    HStack {
-                        Text("300 WPM")
-                            .foregroundStyle(Theme.Colors.secondaryText)
-
-                        Text("•")
-                            .foregroundStyle(Theme.Colors.secondaryText)
-
-                        Text("12:34 remaining")
-                            .foregroundStyle(Theme.Colors.secondaryText)
-
-                        Spacer()
-
-                        Text("\(Int(progress * 100))%")
-                            .foregroundStyle(Theme.Colors.secondaryText)
-                    }
-                    .font(.caption)
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 8)
-            }
-
-            // Menu button
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button {
-                        showMenu = true
-                    } label: {
-                        Image(systemName: "line.3.horizontal")
-                            .font(.title2)
-                            .foregroundStyle(Theme.Colors.primaryText)
-                            .frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("Menu")
-                    .padding(.trailing, 8)
-                    .padding(.bottom, 80)
-                }
+            if viewModel.isLoading {
+                loadingView
+            } else if let error = viewModel.errorMessage {
+                errorView(message: error)
+            } else {
+                readerContent
             }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    router.pop()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .foregroundStyle(Theme.Colors.primaryText)
-                }
-                .accessibilityLabel("Back to library")
+                backButton
             }
         }
         .sheet(isPresented: $showMenu) {
-            MenuView(bookId: bookId, showMenu: $showMenu)
+            MenuView(bookId: bookId, showMenu: $showMenu, viewModel: viewModel)
         }
+        .task {
+            await viewModel.loadBook()
+            hapticGenerator.prepare()
+        }
+        .onDisappear {
+            viewModel.onDisappear()
+        }
+    }
+
+    // MARK: - Loading View
+
+    private var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: Theme.Colors.accent))
+                .scaleEffect(1.5)
+
+            Text("Loading book...")
+                .foregroundStyle(Theme.Colors.secondaryText)
+        }
+    }
+
+    // MARK: - Error View
+
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 48))
+                .foregroundStyle(Theme.Colors.orpHighlight)
+
+            Text(message)
+                .foregroundStyle(Theme.Colors.primaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Button("Return to Library") {
+                router.pop()
+            }
+            .foregroundStyle(Theme.Colors.accent)
+        }
+    }
+
+    // MARK: - Reader Content
+
+    private var readerContent: some View {
+        VStack(spacing: 0) {
+            // Main content area - tap to toggle play/pause
+            tapArea
+
+            // Menu button area
+            menuButtonArea
+
+            // Bottom controls area
+            bottomControls
+        }
+    }
+
+    // MARK: - Tap Area (ORP Display)
+
+    private var tapArea: some View {
+        Button {
+            viewModel.toggle()
+        } label: {
+            GeometryReader { geometry in
+                ORPDisplayView(
+                    word: viewModel.currentWord,
+                    orpIndex: viewModel.currentOrpIndex,
+                    fontSize: CGFloat(viewModel.fontSize)
+                )
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(viewModel.isPlaying ? "Pause reading" : "Resume reading")
+        .accessibilityHint("Tap to toggle playback")
+    }
+
+    // MARK: - Menu Button
+
+    private var menuButtonArea: some View {
+        HStack {
+            Spacer()
+            Button {
+                viewModel.pause()
+                showMenu = true
+            } label: {
+                Image(systemName: "line.3.horizontal")
+                    .font(.title2)
+                    .foregroundStyle(Theme.Colors.primaryText)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("Open menu")
+        }
+        .padding(.trailing, 8)
+    }
+
+    // MARK: - Bottom Controls
+
+    private var bottomControls: some View {
+        VStack(spacing: 8) {
+            // Progress bar
+            ProgressBarView(
+                progress: viewModel.progress,
+                isScrubbing: viewModel.isScrubbing,
+                onScrubStart: {
+                    viewModel.startScrubbing()
+                },
+                onScrubChange: { position in
+                    viewModel.updateScrubPosition(position)
+                },
+                onScrubEnd: {
+                    viewModel.endScrubbing()
+                }
+            )
+
+            // Stats bar
+            StatsBarView(
+                wpm: viewModel.wpm,
+                timeRemaining: viewModel.remainingTimeFormatted,
+                progressPercentage: viewModel.progressPercentage
+            )
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+    }
+
+    // MARK: - Back Button
+
+    private var backButton: some View {
+        Button {
+            viewModel.onDisappear()
+            router.pop()
+        } label: {
+            Image(systemName: "chevron.left")
+                .foregroundStyle(Theme.Colors.primaryText)
+        }
+        .accessibilityLabel("Back to library")
     }
 }
 
