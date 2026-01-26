@@ -354,7 +354,7 @@ struct ORPDisplayViewWithViewModel: View {
 
                 Button("Change Word") {
                     let words = ["hello", "world", "extraordinary", "I", "test"]
-                    let word = words.randomElement()!
+                    guard let word = words.randomElement() else { return }
                     viewModel.setWord(word, orpIndex: ORPCalculator.calculateORPIndex(for: word))
                 }
             }

@@ -181,8 +181,7 @@ enum TokenizerService {
     private static func isSingleLetterInitial(_ word: String) -> Bool {
         guard word.count == 2 else { return false }
         guard word.hasSuffix(".") else { return false }
-
-        let firstChar = word.first!
+        guard let firstChar = word.first else { return false }
         return firstChar.isLetter
     }
 }

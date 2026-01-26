@@ -108,9 +108,22 @@ chapterOverlayTimer = Timer.scheduledTimer(...) { [weak self] _ in
 ---
 
 ## Chunk 5: Add Task Cancellation
-- [ ] **Cancel Tasks on view disappear/deinit**
+- [x] **Cancel Tasks on view disappear/deinit**
+  - ✅ Completed: 2026-01-26
+  - Tests: Static code analysis tests (10 tests, all passing) - tests deleted after verification
+  - Implementation: Added task references and cancellation to all ViewModels with async operations
+  - Files changed:
+    - `ReaderViewModel.swift` - Added `loadTask: Task<Void, Never>?`, refactored `loadBook()` to store task, added cancellation in `onDisappear()`
+    - `ReaderView.swift` - Updated to call synchronous `loadBook()` (internally wraps async)
+    - `SearchViewModel.swift` - Added `loadTask: Task<Void, Never>?`, refactored `loadDocument()` to store task, added `cleanup()` method
+    - `SearchView.swift` - Added `.onDisappear { viewModel.cleanup() }`
+    - `LibraryViewModel.swift` - Added `importTask: Task<Void, Never>?`, refactored `handleFileSelected()` to cancel existing and store new task
+  - Notes:
+    - `PlaybackEngine.swift` already had correct task management (verified: `playbackTask` stored, cancelled before new, nullified on stop)
+    - `TOCViewModel.swift` and `SettingsViewModel.swift` have no async operations - no changes needed
+  - Build verified: ✅ BUILD SUCCEEDED
 
-**Pattern to implement:**
+**Pattern implemented:**
 ```swift
 @Observable
 @MainActor
@@ -138,31 +151,45 @@ final class SomeViewModel {
 }
 ```
 
-**Files needing task cancellation:**
-- `ReaderViewModel.swift` - playback tasks
-- `SearchViewModel.swift` - search tasks
-- `LibraryViewModel.swift` - load tasks
-- `PlaybackEngine.swift` - playback loop task
+**Files audited and fixed:**
+- `ReaderViewModel.swift` - ✅ Fixed (loadTask + cancellation in onDisappear)
+- `SearchViewModel.swift` - ✅ Fixed (loadTask + cleanup method)
+- `LibraryViewModel.swift` - ✅ Fixed (importTask + cancellation before new)
+- `PlaybackEngine.swift` - ✅ Already correct (playbackTask)
 
 ---
 
 ## Chunk 6: Remove Force Unwraps
-- [ ] **Search and fix all force unwraps (!)**
+- [x] **Search and fix all force unwraps (!)**
+  - ✅ Completed: 2026-01-26
+  - Tests: Static code analysis + build verification (BUILD SUCCEEDED)
+  - Implementation: Replaced 4 force unwraps with safe alternatives
+  - Files changed:
+    - `StorageService.swift` (line 41): Changed `FileManager.default.urls(...).first!` to `guard let ... else { fatalError(...) }`
+    - `LibraryDataService.swift` (line 34): Changed `FileManager.default.urls(...).first!` to `guard let ... else { fatalError(...) }`
+    - `TokenizerService.swift` (line 185): Changed `word.first!` to `guard let firstChar = word.first else { return false }`
+    - `ORPDisplayView.swift` (line 357): Changed `words.randomElement()!` to `guard let word = words.randomElement() else { return }`
+  - Notes:
+    - For Documents directory, used `fatalError` since this should never fail on iOS (well-documented invariant)
+    - For `word.first`, early return is safe since we already checked `word.count == 2`
+    - For `randomElement()` in Preview code, early return from button action is appropriate
+  - Grep patterns that are NOT force unwraps (excluded from fixes):
+    - `![alt](url)` - Markdown image pattern in comments
+    - `!=` - Not-equal operator
+    - `!$0.isEmpty` - Boolean negation
 
-Run in terminal:
-```bash
-grep -rn "!" --include="*.swift" SpeedReading/ | grep -v "//"
-```
-
-Replace with safe alternatives:
+**Verified patterns now used:**
 ```swift
-// WRONG
-let word = words[index]!
+// Documents directory access (always available on iOS)
+guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+    fatalError("Unable to access Documents directory - this should never happen on iOS")
+}
 
-// CORRECT
-guard let word = words[safe: index] else { return }
-// or
-if let word = words[safe: index] { ... }
+// Safe first character access
+guard let firstChar = word.first else { return false }
+
+// Safe random element
+guard let word = words.randomElement() else { return }
 ```
 
 ---

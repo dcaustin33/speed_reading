@@ -31,7 +31,9 @@ final class LibraryDataService {
 
     /// Create a LibraryDataService using the app's Documents directory
     convenience init() {
-        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            fatalError("Unable to access Documents directory - this should never happen on iOS")
+        }
         self.init(storageURL: documentsURL)
     }
 

@@ -38,7 +38,9 @@ final class StorageService {
 
     /// Create a StorageService using the app's Documents directory
     convenience init() {
-        let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        guard let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            fatalError("Unable to access Documents directory - this should never happen on iOS")
+        }
         self.init(baseDirectory: documentsURL)
     }
 
