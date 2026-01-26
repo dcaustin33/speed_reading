@@ -551,8 +551,46 @@ Build the core ORP word display widget.
 
 ---
 
-### - [ ] Task 9: Playback Engine
+### - [x] Task 9: Playback Engine
 Implement the core playback state machine and timing system.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/PlaybackEngineTests.swift` (53 tests, all passing, tests deleted after verification)
+- **Implementation**:
+  - `PlaybackState` enum with `.stopped`, `.playing`, `.paused` states
+  - `PlaybackEngine` class with @Observable macro for SwiftUI integration:
+    - State machine: stopped → playing ↔ paused with proper state tracking
+    - Current word index tracking with boundary clamping
+    - Document reference with loadDocument method
+  - Timing system:
+    - `wordDelayMs` computed property: 60000 / WPM milliseconds
+    - Paragraph pause: additional (paragraphPause * 1000) ms on paragraph end words
+    - DispatchSourceTimer for accurate scheduling on dedicated queue
+  - Navigation methods (all pause playback when called during play):
+    - `play()`, `pause()`, `toggle()`, `stop()`
+    - `skipWords(amount:)` - forward/backward by amount
+    - `nextSentence()`, `previousSentence()` - sentence boundary navigation
+    - `nextParagraph()`, `previousParagraph()` - paragraph boundary navigation
+    - `jumpTo(wordIndex:)` - jump to specific position
+  - Boundary handling: clamped to [0, totalWords-1], no wrapping
+  - Settings with auto-clamping: wpm (100-800), paragraphPause (0.25-3.0), wordSkip (1-20)
+  - Computed properties: progress (0-1), remainingTime, remainingTimeFormatted
+  - Callbacks:
+    - `onWordChange: ((Word, Int) -> Void)?`
+    - `onSentenceChange: (() -> Void)?`
+    - `onParagraphChange: (() -> Void)?`
+    - `onChapterChange: ((Chapter) -> Void)?`
+    - `onComplete: (() -> Void)?`
+    - `onStateChange: ((PlaybackState) -> Void)?`
+- **Files created**:
+  - `SpeedReading/Core/Playback/PlaybackEngine.swift`
+- **Files modified**:
+  - `SpeedReading.xcodeproj/project.pbxproj` (added PlaybackEngine.swift to Playback group and build)
+- **Notes**:
+  - Uses @Observable macro for reactive UI updates
+  - Timer runs on dedicated DispatchQueue for accurate timing
+  - Chapter change detection tracks lastChapterIndex to fire callback only on actual chapter transitions
+  - Haptic feedback integration deferred to Task 11 (Progress/Lifecycle) per spec
 
 **Scope:**
 - Implement PlaybackEngine class:
