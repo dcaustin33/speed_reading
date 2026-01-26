@@ -3,17 +3,18 @@
 ## Chunk 1: Enable Xcode Diagnostics
 - [x] **Enable sanitizers and diagnostics before any testing**
   - ✅ Completed: 2026-01-26
-  - Implementation: Created shared Xcode scheme with all diagnostics pre-configured
+  - ✅ Fixed: 2026-01-26 - Disabled ASan to allow builds (ASan+TSan mutually exclusive)
+  - Implementation: Created shared Xcode scheme with diagnostics pre-configured
   - File created: `SpeedReading.xcodeproj/xcshareddata/xcschemes/SpeedReading.xcscheme`
   - Diagnostics enabled:
     - ✅ **Thread Sanitizer** (`enableThreadSanitizer = "YES"`)
-    - ✅ **Address Sanitizer** (`enableAddressSanitizer = "YES"`)
+    - ❌ **Address Sanitizer** (`enableAddressSanitizer = "NO"`) - disabled (mutually exclusive with TSan)
     - ✅ **Zombie Objects** (`NSZombieEnabled = "YES"`)
     - ✅ **MallocScribble** (fills freed memory with 0x55)
     - ✅ **MallocGuardEdges** (adds guard pages around allocations)
   - Notes:
-    - Address Sanitizer and Thread Sanitizer are mutually exclusive at runtime
-    - Xcode will use Thread Sanitizer by default; to use ASan, disable TSan in scheme
+    - Address Sanitizer and Thread Sanitizer are mutually exclusive at compile time
+    - To use ASan instead of TSan, manually edit scheme: set `enableAddressSanitizer = "YES"` and `enableThreadSanitizer = "NO"`
     - Scheme is shared (in xcshareddata) so it's version-controlled and available to all developers
   - Build verified: ✅ XML valid (scheme file verified with xmllint)
 
