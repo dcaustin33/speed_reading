@@ -73,25 +73,37 @@ func startPlayback() {
 ---
 
 ## Chunk 4: Fix Callback Retain Cycles
-- [ ] **Audit all callback closures for [weak self]**
+- [x] **Audit all callback closures for [weak self]**
+  - Completed: 2026-01-26
+  - Tests: `tests/RetainCycleAuditTests.swift` (12 tests, all passing)
+  - Implementation: Audit verified all callbacks already correctly use [weak self]
+  - Findings:
+    - `ReaderViewModel.setupCallbacks()` - All 6 PlaybackEngine callbacks use `[weak self]`
+    - `ReaderViewModel.handleChapterChange()` - Timer callback uses `[weak self]`
+    - `ReaderView.setupHapticCallback()` - Captures `[hapticGenerator]` (value type, safe)
+    - `PlaybackEngine` - Only defines callback properties, never assigns them (correct)
+    - `LibraryViewModel.handleFileSelected()` - Uses `Task { }` without weak self but is short-lived and acceptable
+  - No code changes required - implementation already follows best practices
 
-In `ReaderViewModel` where callbacks are set on `PlaybackEngine`:
+**Verified patterns (all correct):**
 ```swift
-// WRONG - creates retain cycle
-playbackEngine.onWordChange = { word, index in
-    self.currentWord = word
+// ReaderViewModel.swift - All callbacks use [weak self]
+playbackEngine.onWordChange = { [weak self] word, index in
+    self?.currentWord = word.text
+    self?.currentOrpIndex = word.orpIndex
 }
 
-// CORRECT - breaks retain cycle
-playbackEngine.onWordChange = { [weak self] word, index in
-    self?.currentWord = word
+// Timer callback also uses [weak self]
+chapterOverlayTimer = Timer.scheduledTimer(...) { [weak self] _ in
+    self?.hideChapterOverlay()
 }
 ```
 
-**Files to check:**
+**Files audited:**
 - `ReaderViewModel.swift` - sets callbacks on PlaybackEngine
 - `PlaybackEngine.swift` - callback property definitions
-- Any closure stored as a property
+- `ReaderView.swift` - haptic feedback callback
+- `LibraryViewModel.swift` - Task closures
 
 ---
 
