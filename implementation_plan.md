@@ -215,6 +215,10 @@ if let word = playbackEngine.currentWord { ... }
 
 ## Chunk 7: Test Core Flows
 - [ ] **Test with sanitizers enabled**
+  - ⏸️ **BLOCKED**: Requires manual testing on iOS Simulator
+  - Reason: iOS Simulator service not accessible in CI/sandbox environment
+  - Required: Human tester with Xcode running locally
+  - Prerequisites: Chunks 1-6 complete ✅
 
 Run app with Thread Sanitizer ON and test each flow:
 
@@ -237,6 +241,8 @@ Run app with Thread Sanitizer ON and test each flow:
 
 ## Chunk 8: Test Crash Scenarios
 - [ ] **Stress test rapid state changes**
+  - ⏸️ **BLOCKED**: Requires manual testing on iOS Simulator
+  - Reason: Same as Chunk 7 - needs running app with human interaction
 
 With sanitizers ON:
 1. [ ] Rapid play/pause toggle (10+ times fast)
@@ -249,6 +255,8 @@ With sanitizers ON:
 
 ## Chunk 9: Test Edge Cases
 - [ ] **Test boundary conditions**
+  - ⏸️ **BLOCKED**: Requires manual testing on iOS Simulator
+  - Reason: Same as Chunk 7 - needs running app with human interaction
 
 1. [ ] Empty book (0 words)
 2. [ ] Single word book
@@ -260,6 +268,8 @@ With sanitizers ON:
 
 ## Chunk 10: Final Verification
 - [ ] **Run extended playback test**
+  - ⏸️ **BLOCKED**: Requires manual testing on iOS Simulator
+  - Reason: Same as Chunk 7 - needs running app with human interaction
 
 1. Start playback on a book
 2. Let it run for 5+ minutes uninterrupted
