@@ -50,6 +50,8 @@
 		E81000002B5F1A0000001002 /* StatsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001002 /* StatsBarView.swift */; };
 		E81000002B5F1A0000001200 /* ChapterOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001200 /* ChapterOverlayView.swift */; };
 		E81000002B5F1A0000001201 /* CompletionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001201 /* CompletionOverlayView.swift */; };
+		E81000002B5F1A0000001400 /* SearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001400 /* SearchService.swift */; };
+		E81000002B5F1A0000001401 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001401 /* SearchViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,6 +99,8 @@
 		E81000012B5F1A0000001002 /* StatsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsBarView.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001200 /* ChapterOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterOverlayView.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001201 /* CompletionOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionOverlayView.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000001400 /* SearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchService.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000001401 /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -172,6 +176,7 @@
 				E83000002B5F1A0000000031 /* Storage */,
 				E83000002B5F1A0000000032 /* EPUB */,
 				E83000002B5F1A0000000033 /* Library */,
+				E83000002B5F1A0000000034 /* Search */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -269,6 +274,7 @@
 			isa = PBXGroup;
 			children = (
 				E81000012B5F1A0000000009 /* SearchView.swift */,
+				E81000012B5F1A0000001401 /* SearchViewModel.swift */,
 			);
 			path = Search;
 			sourceTree = "<group>";
@@ -326,6 +332,14 @@
 				E81000012B5F1A0000000600 /* LibraryDataService.swift */,
 			);
 			path = Library;
+			sourceTree = "<group>";
+		};
+		E83000002B5F1A0000000034 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				E81000012B5F1A0000001400 /* SearchService.swift */,
+			);
+			path = Search;
 			sourceTree = "<group>";
 		};
 		E83000002B5F1A0000000040 /* Theme */ = {
@@ -455,6 +469,8 @@
 				E81000002B5F1A0000001002 /* StatsBarView.swift in Sources */,
 				E81000002B5F1A0000001200 /* ChapterOverlayView.swift in Sources */,
 				E81000002B5F1A0000001201 /* CompletionOverlayView.swift in Sources */,
+				E81000002B5F1A0000001400 /* SearchService.swift in Sources */,
+				E81000002B5F1A0000001401 /* SearchViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

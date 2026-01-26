@@ -182,6 +182,7 @@ class ReaderViewModel {
 
     /// Loads the book and prepares it for reading.
     /// Opens at the saved position, aligned to paragraph start.
+    /// If coming from search, jumps to the searched position instead.
     func loadBook() async {
         isLoading = true
         errorMessage = nil
@@ -214,16 +215,23 @@ class ReaderViewModel {
             let document = TokenizerService.tokenize(text: content, chapters: chapters)
             self.document = document
 
-            // Determine resume position
-            var resumeIndex = book.currentWordIndex
+            // Check for search jump position first (takes priority)
+            var resumeIndex: Int
+            if let searchJumpIndex = SearchViewModel.getAndClearJumpPosition(for: bookId) {
+                // Jump directly to searched position (no paragraph alignment per spec)
+                resumeIndex = min(searchJumpIndex, max(0, document.totalWords - 1))
+            } else {
+                // Normal resume: use saved position
+                resumeIndex = book.currentWordIndex
 
-            // If hash changed, we already reset to 0 in openBook
-            if openResult.hashChanged {
-                resumeIndex = 0
+                // If hash changed, we already reset to 0 in openBook
+                if openResult.hashChanged {
+                    resumeIndex = 0
+                }
+
+                // Find paragraph start per spec (Section 6.4)
+                resumeIndex = findParagraphStart(from: resumeIndex, in: document)
             }
-
-            // Find paragraph start per spec (Section 6.4)
-            resumeIndex = findParagraphStart(from: resumeIndex, in: document)
 
             // Load document into playback engine (always starts paused)
             playbackEngine.loadDocument(document, startAt: resumeIndex)
