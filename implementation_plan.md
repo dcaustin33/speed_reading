@@ -274,8 +274,54 @@ Implement file import for .txt and .md files.
 
 ---
 
-### - [ ] Task 5: EPUB Import and Processing
+### - [x] Task 5: EPUB Import and Processing
 Implement EPUB file parsing and processing.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/EPUBImportServiceTests.swift` (46 tests), all passing
+- **Implementation**:
+  - `HTMLStripper` enum with comprehensive HTML to plain text conversion:
+    - Removes script/style content entirely
+    - Converts block-level tags (p, div, h1-h6, li, blockquote, etc.) to paragraph breaks
+    - Handles consecutive `<br>` tags as paragraph breaks
+    - Decodes HTML entities (named: &nbsp;, &amp;, &ldquo;, etc.; numeric: &#169;, &#x00A9;)
+    - Normalizes whitespace while preserving paragraph structure
+  - `DRMDetector` enum:
+    - Checks META-INF/encryption.xml for DRM indicators
+    - Detects Adobe ADEPT encryption (http://ns.adobe.com/adept)
+    - Detects W3C XML encryption (http://www.w3.org/2001/04/xmlenc)
+    - Correctly excludes font obfuscation (http://www.idpf.org/2008/embedding) as non-DRM
+  - `OPFParser` enum:
+    - Parses dc:title and dc:creator from OPF metadata
+    - Extracts cover image path via meta name="cover" and cover-image property
+    - Parses spine reading order (itemref -> manifest href mapping)
+    - Parses TOC paths for NCX (EPUB 2) and NAV (EPUB 3) documents
+  - `TOCParser` module with `NCXParser` and `NAVParser` enums:
+    - NCX: Parses navPoint elements with navLabel/text and content src
+    - NAV: Parses nav epub:type="toc" with anchor href/text extraction
+    - Both handle fragment identifiers (removes # for file-based chapter mapping)
+  - `EPUBImportService` enum:
+    - ZIP extraction using unzip command (macOS/Simulator) with fallback placeholder for device
+    - container.xml parsing to locate OPF file
+    - Spine document processing with HTML stripping
+    - Chapter boundary detection and word index mapping
+    - SHA256 hash calculation for file integrity
+    - Returns `EPUBLoadResult` with content, hash, metadata, chapters, coverData, hasTOC
+  - Updated `FileImportService.loadFile()` to call `EPUBImportService.loadEPUB()` for .epub files
+- **Files created**:
+  - `SpeedReading/Services/EPUB/HTMLStripper.swift`
+  - `SpeedReading/Services/EPUB/DRMDetector.swift`
+  - `SpeedReading/Services/EPUB/OPFParser.swift`
+  - `SpeedReading/Services/EPUB/TOCParser.swift`
+  - `SpeedReading/Services/EPUB/EPUBImportService.swift`
+  - `Tests/EPUBImportServiceTests.swift`
+- **Files modified**:
+  - `SpeedReading/Services/FileImport/FileImportService.swift` (EPUB case now calls EPUBImportService)
+  - `SpeedReading.xcodeproj/project.pbxproj` (added EPUB service files to build)
+- **Notes**:
+  - ZIP extraction uses /usr/bin/unzip on macOS/Simulator; actual iOS deployment would need ZIPFoundation or similar library
+  - Regex-based XML parsing is sufficient for well-formed EPUBs; a proper XML parser would be more robust
+  - Tests include 15 HTML stripping tests, 6 DRM detection tests, 5 OPF parsing tests, 2 NCX tests, 2 NAV tests
 
 **Scope:**
 - Add EPUB parsing capability (consider using ZIPFoundation for extraction)

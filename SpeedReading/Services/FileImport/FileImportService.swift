@@ -59,8 +59,8 @@ enum FileImportService {
         case .md:
             return try loadMarkdownFile(from: url)
         case .epub:
-            // EPUB import is handled by EPUBImportService (Task 5)
-            throw FileImportError.unsupportedFormat
+            let result = try EPUBImportService.loadEPUB(from: url)
+            return FileLoadResult(content: result.content, hash: result.hash)
         }
     }
 

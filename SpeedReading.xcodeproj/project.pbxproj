@@ -34,6 +34,11 @@
 		E81000002B5F1A0000000401 /* MarkdownStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000401 /* MarkdownStripper.swift */; };
 		E81000002B5F1A0000000402 /* FileImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000402 /* FileImportService.swift */; };
 		E81000002B5F1A0000000403 /* DocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000403 /* DocumentPicker.swift */; };
+		E81000002B5F1A0000000500 /* HTMLStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000500 /* HTMLStripper.swift */; };
+		E81000002B5F1A0000000501 /* DRMDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000501 /* DRMDetector.swift */; };
+		E81000002B5F1A0000000502 /* OPFParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000502 /* OPFParser.swift */; };
+		E81000002B5F1A0000000503 /* TOCParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000503 /* TOCParser.swift */; };
+		E81000002B5F1A0000000504 /* EPUBImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000504 /* EPUBImportService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +70,11 @@
 		E81000012B5F1A0000000401 /* MarkdownStripper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownStripper.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000402 /* FileImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileImportService.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000403 /* DocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPicker.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000000500 /* HTMLStripper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLStripper.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000000501 /* DRMDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRMDetector.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000000502 /* OPFParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OPFParser.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000000503 /* TOCParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOCParser.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000000504 /* EPUBImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPUBImportService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -268,6 +278,11 @@
 		E83000002B5F1A0000000032 /* EPUB */ = {
 			isa = PBXGroup;
 			children = (
+				E81000012B5F1A0000000500 /* HTMLStripper.swift */,
+				E81000012B5F1A0000000501 /* DRMDetector.swift */,
+				E81000012B5F1A0000000502 /* OPFParser.swift */,
+				E81000012B5F1A0000000503 /* TOCParser.swift */,
+				E81000012B5F1A0000000504 /* EPUBImportService.swift */,
 			);
 			path = EPUB;
 			sourceTree = "<group>";
@@ -383,6 +398,11 @@
 				E81000002B5F1A0000000401 /* MarkdownStripper.swift in Sources */,
 				E81000002B5F1A0000000402 /* FileImportService.swift in Sources */,
 				E81000002B5F1A0000000403 /* DocumentPicker.swift in Sources */,
+				E81000002B5F1A0000000500 /* HTMLStripper.swift in Sources */,
+				E81000002B5F1A0000000501 /* DRMDetector.swift in Sources */,
+				E81000002B5F1A0000000502 /* OPFParser.swift in Sources */,
+				E81000002B5F1A0000000503 /* TOCParser.swift in Sources */,
+				E81000002B5F1A0000000504 /* EPUBImportService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
