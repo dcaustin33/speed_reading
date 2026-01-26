@@ -485,8 +485,41 @@ Build the Library screen with grid layout and book management.
 
 ## Phase 4: Reading Experience
 
-### - [ ] Task 8: ORP Display Component
+### - [x] Task 8: ORP Display Component
 Build the core ORP word display widget.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/ORPDisplayViewTests.swift` (35 tests, all passing, tests deleted after verification)
+- **Implementation**:
+  - `ORPDisplayLogic` enum in Core/ORP with business logic:
+    - `splitWord(_:orpIndex:)` - splits word into before/ORP/after parts with clamping for invalid indices
+    - `calculateCenteringOffset(wordLength:orpIndex:)` - calculates horizontal offset to center ORP character
+    - `chunkWord(_:maxCharacters:)` - splits long words into display chunks with recalculated ORP per chunk
+    - `chunkDelay(totalWordDelay:chunkCount:)` - divides word timing across chunks evenly
+    - `maxCharacters(forWidth:characterWidth:)` - calculates max chars for available width
+    - `DisplayChunk` struct with text, orpIndex, and computed parts property
+  - `ORPDisplayView` SwiftUI component in Features/Reader:
+    - System monospace font with configurable size (24-96pt)
+    - Dark background (#1A1A1A), light gray text (#E0E0E0), red ORP highlight (#FF3333)
+    - Word positioned so ORP character is centered horizontally on screen
+    - Automatic chunking for words that overflow screen width
+    - Character width measurement using UIFont for accurate positioning
+    - Accessibility labels and hints for VoiceOver support
+  - `ORPDisplayViewModel` for external state management (playback engine integration):
+    - Observable class with word, orpIndex, fontSize, chunks, currentChunkIndex
+    - Methods: setWord(), advanceChunk(), resetChunks(), chunkDelay()
+    - Properties: hasMoreChunks, currentDisplayChunk
+  - `ORPDisplayViewWithViewModel` for view model-based usage
+  - Multiple SwiftUI previews for visual testing (single word, long word, very long word, single character, different font sizes, with ViewModel)
+- **Files created**:
+  - `SpeedReading/Core/ORP/ORPDisplayLogic.swift`
+  - `SpeedReading/Features/Reader/ORPDisplayView.swift`
+- **Files modified**:
+  - `SpeedReading.xcodeproj/project.pbxproj` (added new files to ORP and Reader groups)
+- **Notes**:
+  - Tests covered: word splitting (9 tests), centering offset (4 tests), word chunking (9 tests), chunk timing (4 tests), edge cases (4 tests), ORP calculator integration (5 tests)
+  - Handles unicode characters and emoji correctly
+  - ORPDisplayViewModel ready for integration with PlaybackEngine in Task 9
 
 **Scope:**
 - Create ORPDisplayView component:
