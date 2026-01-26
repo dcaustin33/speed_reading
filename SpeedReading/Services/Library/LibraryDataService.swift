@@ -133,7 +133,8 @@ final class LibraryDataService {
     ///   - hasTOC: Whether the book has a table of contents
     ///   - chapters: Optional chapter list (for EPUB)
     /// - Returns: The created Book
-    /// - Throws: FileImportError.duplicateBook if duplicate detected
+    /// - Throws: FileImportError.duplicateBook if duplicate detected,
+    ///           FileImportError.storageFull if disk is full
     func importBook(
         title: String,
         author: String?,
@@ -171,30 +172,67 @@ final class LibraryDataService {
             hasTOC: hasTOC
         )
 
-        // Save book content to Books/{uuid}.{ext}
+        do {
+            // Save book content to Books/{uuid}.{ext}
+            let bookFileURL = booksDirectory.appendingPathComponent("\(bookId.uuidString).\(fileType.fileExtension)")
+            try content.write(to: bookFileURL, atomically: true, encoding: .utf8)
+
+            // Save cover if available to Covers/{uuid}.jpg
+            if let coverData = coverData {
+                let coverURL = coversDirectory.appendingPathComponent("\(bookId.uuidString).jpg")
+                try coverData.write(to: coverURL)
+            }
+
+            // Save chapters if available to Chapters/{uuid}.json
+            if let chapters = chapters, !chapters.isEmpty {
+                let chaptersURL = chaptersDirectory.appendingPathComponent("\(bookId.uuidString).json")
+                let encoder = JSONEncoder()
+                encoder.outputFormatting = [.prettyPrinted]
+                let chaptersData = try encoder.encode(chapters)
+                try chaptersData.write(to: chaptersURL)
+            }
+
+            // Add to library and save
+            library.books.append(book)
+            try saveLibrary()
+
+            return book
+        } catch {
+            // Clean up any partial files if import fails
+            cleanupPartialImport(bookId: bookId, fileType: fileType)
+
+            // Convert storage full errors to FileImportError.storageFull
+            if Self.isStorageFullError(error) {
+                throw FileImportError.storageFull
+            }
+            throw error
+        }
+    }
+
+    /// Checks if an error indicates disk/storage is full
+    private static func isStorageFullError(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        // NSFileWriteOutOfSpaceError (error code 640)
+        // NSFileWriteVolumeReadOnlyError (error code 642) - also treated as storage issue
+        if nsError.domain == NSCocoaErrorDomain {
+            return nsError.code == NSFileWriteOutOfSpaceError || nsError.code == 640
+        }
+        // POSIX errors
+        if nsError.domain == NSPOSIXErrorDomain {
+            return nsError.code == ENOSPC || nsError.code == EDQUOT
+        }
+        return false
+    }
+
+    /// Cleans up partially written files if import fails
+    private func cleanupPartialImport(bookId: UUID, fileType: FileType) {
         let bookFileURL = booksDirectory.appendingPathComponent("\(bookId.uuidString).\(fileType.fileExtension)")
-        try content.write(to: bookFileURL, atomically: true, encoding: .utf8)
+        let coverURL = coversDirectory.appendingPathComponent("\(bookId.uuidString).jpg")
+        let chaptersURL = chaptersDirectory.appendingPathComponent("\(bookId.uuidString).json")
 
-        // Save cover if available to Covers/{uuid}.jpg
-        if let coverData = coverData {
-            let coverURL = coversDirectory.appendingPathComponent("\(bookId.uuidString).jpg")
-            try coverData.write(to: coverURL)
-        }
-
-        // Save chapters if available to Chapters/{uuid}.json
-        if let chapters = chapters, !chapters.isEmpty {
-            let chaptersURL = chaptersDirectory.appendingPathComponent("\(bookId.uuidString).json")
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted]
-            let chaptersData = try encoder.encode(chapters)
-            try chaptersData.write(to: chaptersURL)
-        }
-
-        // Add to library and save
-        library.books.append(book)
-        try saveLibrary()
-
-        return book
+        try? fileManager.removeItem(at: bookFileURL)
+        try? fileManager.removeItem(at: coverURL)
+        try? fileManager.removeItem(at: chaptersURL)
     }
 
     /// Simple tokenization for word count (matches TokenizerService behavior)
