@@ -39,7 +39,19 @@ final class SomeViewModel {
 ---
 
 ## Chunk 3: Fix PlaybackEngine Threading
-- [ ] **Ensure PlaybackEngine timer runs on MainActor**
+- [x] **Ensure PlaybackEngine timer runs on MainActor**
+  - ✅ Completed: 2026-01-26
+  - Tests: 10 static analysis tests, all passing
+  - Verification: PlaybackEngine already correctly implemented
+  - Findings:
+    - ✅ `@Observable` and `@MainActor` present on class
+    - ✅ Uses `Task.sleep` for timing (not Timer/DispatchSourceTimer)
+    - ✅ No `DispatchQueue` usage anywhere in file
+    - ✅ Recursive async pattern with proper cancellation handling
+    - ✅ All state changes are direct assignments (MainActor handles thread safety)
+    - ✅ `playbackTask?.cancel()` called before creating new task
+    - ✅ State checked before continuing loop (`guard state == .playing`)
+  - No code changes required - implementation already follows spec
 
 Check `PlaybackEngine.swift`:
 - Timer/Task must dispatch word updates on MainActor
