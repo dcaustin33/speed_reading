@@ -31,6 +31,9 @@ final class LibraryViewModel: ObservableObject {
     private let libraryService: LibraryDataService
     private let fileManager = FileManager.default
 
+    /// Task reference for file import (enables cancellation)
+    private var importTask: Task<Void, Never>?
+
     // MARK: - Computed Properties
 
     var isEmpty: Bool { books.isEmpty }
@@ -150,9 +153,12 @@ final class LibraryViewModel: ObservableObject {
     // MARK: - Book Import
 
     func handleFileSelected(_ url: URL) {
+        // Cancel any existing import operation
+        importTask?.cancel()
+
         isLoading = true
 
-        Task {
+        importTask = Task {
             do {
                 // Validate file type
                 let fileType = try FileImportService.validateFileType(url: url)

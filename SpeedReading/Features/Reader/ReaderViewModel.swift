@@ -3,6 +3,7 @@ import Foundation
 /// View model for the Reading screen, coordinating between PlaybackEngine and UI.
 /// Handles book loading, playback control, scrubbing, and progress tracking.
 @Observable
+@MainActor
 class ReaderViewModel {
     // MARK: - Dependencies
 
@@ -132,6 +133,9 @@ class ReaderViewModel {
     /// Tracks whether we've shown the initial chapter (to avoid showing on first load)
     private var hasShownInitialChapter: Bool = false
 
+    /// Task reference for book loading (enables cancellation)
+    private var loadTask: Task<Void, Never>?
+
     // MARK: - Callbacks
 
     /// Called on sentence boundary for haptic feedback
@@ -183,7 +187,16 @@ class ReaderViewModel {
     /// Loads the book and prepares it for reading.
     /// Opens at the saved position, aligned to paragraph start.
     /// If coming from search, jumps to the searched position instead.
-    func loadBook() async {
+    func loadBook() {
+        // Cancel any existing load operation
+        loadTask?.cancel()
+        loadTask = Task {
+            await performLoadBook()
+        }
+    }
+
+    /// Internal async implementation of book loading.
+    private func performLoadBook() async {
         isLoading = true
         errorMessage = nil
 
@@ -449,6 +462,10 @@ class ReaderViewModel {
 
     /// Called when leaving the reader screen
     func onDisappear() {
+        // Cancel any pending load task
+        loadTask?.cancel()
+        loadTask = nil
+
         playbackEngine.pause()
         saveProgress()
         chapterOverlayTimer?.invalidate()

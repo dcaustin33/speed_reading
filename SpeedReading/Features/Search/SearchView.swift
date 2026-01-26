@@ -41,8 +41,11 @@ struct SearchView: View {
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .task {
-            await viewModel.loadDocument()
+            viewModel.loadDocument()
             isSearchFieldFocused = true
+        }
+        .onDisappear {
+            viewModel.cleanup()
         }
     }
 

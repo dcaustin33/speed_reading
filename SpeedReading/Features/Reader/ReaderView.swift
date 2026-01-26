@@ -61,7 +61,7 @@ struct ReaderView: View {
             MenuView(bookId: bookId, showMenu: $showMenu, viewModel: viewModel)
         }
         .task {
-            await viewModel.loadBook()
+            viewModel.loadBook()
             hapticGenerator.prepare()
             setupHapticCallback()
         }

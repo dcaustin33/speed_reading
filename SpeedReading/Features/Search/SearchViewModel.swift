@@ -7,6 +7,7 @@ let SearchJumpToBookIdKey = "SearchJumpToBookId"
 /// View model for the Search screen.
 /// Handles document loading, search execution, and result navigation.
 @Observable
+@MainActor
 class SearchViewModel {
     // MARK: - Dependencies
 
@@ -18,6 +19,9 @@ class SearchViewModel {
     private(set) var document: Document?
     private(set) var isLoading: Bool = false
     private(set) var errorMessage: String?
+
+    /// Task reference for document loading (enables cancellation)
+    private var loadTask: Task<Void, Never>?
 
     // MARK: - Search State
 
@@ -43,7 +47,16 @@ class SearchViewModel {
     // MARK: - Loading
 
     /// Loads the document for searching
-    func loadDocument() async {
+    func loadDocument() {
+        // Cancel any existing load operation
+        loadTask?.cancel()
+        loadTask = Task {
+            await performLoadDocument()
+        }
+    }
+
+    /// Internal async implementation of document loading.
+    private func performLoadDocument() async {
         isLoading = true
         errorMessage = nil
 
@@ -69,6 +82,14 @@ class SearchViewModel {
             errorMessage = "Could not load book: \(error.localizedDescription)"
             isLoading = false
         }
+    }
+
+    // MARK: - Cleanup
+
+    /// Called when leaving the search screen
+    func cleanup() {
+        loadTask?.cancel()
+        loadTask = nil
     }
 
     // MARK: - Search
