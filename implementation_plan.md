@@ -356,8 +356,28 @@ Implement EPUB file parsing and processing.
 
 ---
 
-### - [ ] Task 6: Library Data Management
+### - [x] Task 6: Library Data Management
 Implement the library data layer with duplicate detection and book management.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/LibraryDataServiceTests.swift` (31 tests, all passing)
+- **Implementation**:
+  - `LibraryDataService` class with full CRUD operations for books
+  - Book import workflow: UUID generation, file copy to Books/, cover save to Covers/, hash calculation, tokenization for word count
+  - Duplicate detection: normalized (lowercase, trimmed) title + author comparison; if author missing, uses title only
+  - Book deletion: single and bulk delete, removes book file, cover, and library.json entry
+  - File hash validation on `openBook()`: detects content changes and resets progress to 0; removes deleted books from library
+  - Library sorting: recent (dateLastOpened with nulls last, fallback to dateAdded) and title (case-insensitive A-Z)
+  - Progress update with clamping to valid range [0, totalWords-1]
+- **Files created**:
+  - `SpeedReading/Services/Library/LibraryDataService.swift`
+  - `Tests/LibraryDataServiceTests.swift`
+- **Files modified**:
+  - `SpeedReading.xcodeproj/project.pbxproj` (added Library service group and file)
+- **Notes**:
+  - LibraryDataService includes its own tokenization for word counting (matches TokenizerService behavior including hyphenated word splitting)
+  - Tests are standalone Swift scripts runnable with `swift Tests/LibraryDataServiceTests.swift`
+  - Service handles both memory state and persistence to library.json automatically
 
 **Scope:**
 - Implement book import workflow:

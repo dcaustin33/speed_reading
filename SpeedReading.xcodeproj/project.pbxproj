@@ -39,6 +39,7 @@
 		E81000002B5F1A0000000502 /* OPFParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000502 /* OPFParser.swift */; };
 		E81000002B5F1A0000000503 /* TOCParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000503 /* TOCParser.swift */; };
 		E81000002B5F1A0000000504 /* EPUBImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000504 /* EPUBImportService.swift */; };
+		E81000002B5F1A0000000600 /* LibraryDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000600 /* LibraryDataService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +76,7 @@
 		E81000012B5F1A0000000502 /* OPFParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OPFParser.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000503 /* TOCParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOCParser.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000504 /* EPUBImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPUBImportService.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000000600 /* LibraryDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryDataService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +151,7 @@
 				E83000002B5F1A0000000030 /* FileImport */,
 				E83000002B5F1A0000000031 /* Storage */,
 				E83000002B5F1A0000000032 /* EPUB */,
+				E83000002B5F1A0000000033 /* Library */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -287,6 +290,14 @@
 			path = EPUB;
 			sourceTree = "<group>";
 		};
+		E83000002B5F1A0000000033 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				E81000012B5F1A0000000600 /* LibraryDataService.swift */,
+			);
+			path = Library;
+			sourceTree = "<group>";
+		};
 		E83000002B5F1A0000000040 /* Theme */ = {
 			isa = PBXGroup;
 			children = (
@@ -403,6 +414,7 @@
 				E81000002B5F1A0000000502 /* OPFParser.swift in Sources */,
 				E81000002B5F1A0000000503 /* TOCParser.swift in Sources */,
 				E81000002B5F1A0000000504 /* EPUBImportService.swift in Sources */,
+				E81000002B5F1A0000000600 /* LibraryDataService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
