@@ -118,6 +118,11 @@ class ReaderViewModel {
 
     private(set) var isCompleted: Bool = false
 
+    // MARK: - Callbacks
+
+    /// Called on sentence boundary for haptic feedback
+    var onSentenceBoundary: (() -> Void)?
+
     // MARK: - Initialization
 
     init(bookId: UUID, libraryDataService: LibraryDataService = LibraryDataService()) {
@@ -135,7 +140,19 @@ class ReaderViewModel {
         }
 
         playbackEngine.onSentenceChange = { [weak self] in
-            self?.triggerHapticFeedback()
+            self?.onSentenceBoundary?()
+        }
+
+        playbackEngine.onParagraphChange = { [weak self] in
+            // Save progress at every paragraph end per spec (Section 6.3)
+            self?.saveProgress()
+        }
+
+        playbackEngine.onStateChange = { [weak self] state in
+            // Save progress when playback pauses (for any reason)
+            if state == .paused {
+                self?.saveProgress()
+            }
         }
 
         playbackEngine.onComplete = { [weak self] in
@@ -351,13 +368,6 @@ class ReaderViewModel {
         update(&settings)
         libraryDataService.settings = settings
         try? libraryDataService.saveLibrary()
-    }
-
-    // MARK: - Haptic Feedback
-
-    private func triggerHapticFeedback() {
-        // Haptic feedback is handled in the view layer with UIImpactFeedbackGenerator
-        // This is called on sentence boundaries per spec
     }
 
     // MARK: - Completion

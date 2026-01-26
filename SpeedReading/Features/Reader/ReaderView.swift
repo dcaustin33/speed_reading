@@ -4,6 +4,7 @@ import UIKit
 /// Main reading screen with ORP display, playback controls, and progress tracking.
 struct ReaderView: View {
     @EnvironmentObject var router: NavigationRouter
+    @Environment(\.scenePhase) private var scenePhase
     let bookId: UUID
 
     @State private var viewModel: ReaderViewModel
@@ -42,9 +43,13 @@ struct ReaderView: View {
         .task {
             await viewModel.loadBook()
             hapticGenerator.prepare()
+            setupHapticCallback()
         }
         .onDisappear {
             viewModel.onDisappear()
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            handleScenePhaseChange(from: oldPhase, to: newPhase)
         }
     }
 
@@ -176,6 +181,49 @@ struct ReaderView: View {
                 .foregroundStyle(Theme.Colors.primaryText)
         }
         .accessibilityLabel("Back to library")
+    }
+
+    // MARK: - Scene Phase Handling
+
+    /// Handles app lifecycle changes per spec Section 3.9
+    /// Auto-pauses playback when app goes to background or system overlays appear
+    private func handleScenePhaseChange(from oldPhase: ScenePhase, to newPhase: ScenePhase) {
+        // Per spec Section 3.9: Pause triggers
+        // - App moves to background
+        // - Screen locks
+        // - Incoming phone call
+        // - Control Center or Notification Center opens
+        // - Any system overlay appears
+
+        guard viewModel.isPlaying else { return }
+
+        switch newPhase {
+        case .inactive:
+            // System overlay appeared (Control Center, Notification Center, incoming call)
+            viewModel.pause()
+            viewModel.saveProgress()
+        case .background:
+            // App moved to background or screen locked
+            viewModel.pause()
+            viewModel.saveProgress()
+        case .active:
+            // Returning to app - per spec, "Playback does NOT auto-resume"
+            // Do nothing
+            break
+        @unknown default:
+            break
+        }
+    }
+
+    // MARK: - Haptic Feedback Setup
+
+    /// Sets up haptic feedback callback for sentence boundaries
+    private func setupHapticCallback() {
+        viewModel.onSentenceBoundary = { [hapticGenerator] in
+            // Respect system haptics setting via UIFeedbackGenerator
+            // UIImpactFeedbackGenerator automatically respects system settings
+            hapticGenerator.impactOccurred()
+        }
     }
 }
 

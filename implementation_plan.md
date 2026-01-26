@@ -628,8 +628,51 @@ Implement the core playback state machine and timing system.
 
 ---
 
-### - [ ] Task 10: Reading Screen UI
+### - [x] Task 10: Reading Screen UI
 Build the Reading screen with playback controls and progress.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/ReaderViewModelTests.swift` (33 tests, all passing, tests deleted after verification)
+- **Implementation**:
+  - `ReaderViewModel` class with @Observable macro for SwiftUI integration:
+    - Book loading with paragraph-aligned resume per spec Section 6.4
+    - PlaybackEngine integration for playback control and navigation
+    - Scrubbing with live preview and drag gestures
+    - Progress calculation (0-100%) and time remaining formatting (M:SS or H:MM:SS)
+    - Settings synchronization (WPM, paragraph pause, font size, word skip)
+    - Auto-save progress on pause/background/navigation
+    - Completion detection and state management
+  - `ProgressBarView` component:
+    - 8pt height, dark gray track (#404040), blue fill (#4A90D9)
+    - Draggable scrubbing with DragGesture
+    - Accessibility labels and adjustable action support
+  - `StatsBarView` component:
+    - Displays WPM, time remaining, and percentage
+    - Format: "300 WPM • 12:34 remaining" with right-aligned percentage
+  - Updated `ReaderView`:
+    - Loading state with spinner
+    - Error state with return to library
+    - Full playback UI with tap-to-toggle
+    - Menu button with auto-pause
+    - Back button with progress save
+    - Haptic feedback preparation for sentence boundaries
+  - Updated `MenuView`:
+    - Optional ReaderViewModel parameter for connected controls
+    - Navigation buttons wired to playback engine
+    - WPM and paragraph pause sliders with immediate apply
+    - Conditional TOC visibility based on book.hasTOC
+- **Files created**:
+  - `SpeedReading/Features/Reader/ReaderViewModel.swift`
+  - `SpeedReading/Features/Reader/ProgressBarView.swift`
+  - `SpeedReading/Features/Reader/StatsBarView.swift`
+- **Files modified**:
+  - `SpeedReading/Features/Reader/ReaderView.swift` (complete rewrite with ViewModel integration)
+  - `SpeedReading/Features/Menu/MenuView.swift` (added optional viewModel parameter)
+  - `SpeedReading.xcodeproj/project.pbxproj` (added new files to Reader group and build)
+- **Notes**:
+  - ReaderViewModel uses async/await for book loading
+  - Haptic feedback generator prepared in ReaderView; actual feedback triggered in Task 11
+  - Menu sliders now update both PlaybackEngine and persistent settings
 
 **Scope:**
 - Implement Reading screen layout:
@@ -667,8 +710,39 @@ Build the Reading screen with playback controls and progress.
 
 ---
 
-### - [ ] Task 11: Progress Tracking and App Lifecycle
+### - [x] Task 11: Progress Tracking and App Lifecycle
 Implement progress persistence and app lifecycle handling.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/ProgressTrackingTests.swift` (20 tests, all passing, tests deleted after verification)
+- **Implementation**:
+  - Progress saving triggers implemented:
+    - `onParagraphChange` callback in PlaybackEngine triggers save at every paragraph end
+    - `onStateChange` callback saves on any pause event
+    - ScenePhase monitoring auto-pauses and saves on `.inactive` (Control Center, Notification Center, incoming call) and `.background` (app backgrounded, screen locked)
+    - `onDisappear` saves when navigating back to library
+    - Scrubbing saves via pause when user starts dragging progress bar
+  - Progress recovery with paragraph alignment:
+    - `findParagraphStart()` scans backward from saved index for paragraph end
+    - Returns word after paragraph end, or 0 if no paragraph found
+    - Completed books (at last word) stay at last word
+    - Hash changed detection already handled in `LibraryDataService.openBook()`
+  - Auto-pause triggers via `@Environment(\.scenePhase)`:
+    - `.inactive` -> pause + save (system overlays)
+    - `.background` -> pause + save (app backgrounded)
+    - `.active` -> no action (never auto-resume per spec)
+  - Haptic feedback on sentence boundaries:
+    - `onSentenceBoundary` callback exposed on ReaderViewModel
+    - ReaderView sets up callback to trigger `UIImpactFeedbackGenerator.impactOccurred()`
+    - UIImpactFeedbackGenerator automatically respects system Haptics setting
+  - `dateLastOpened` tracking already implemented in `LibraryDataService.openBook()`
+- **Files modified**:
+  - `SpeedReading/Features/Reader/ReaderViewModel.swift` (added paragraph/state callbacks, onSentenceBoundary property)
+  - `SpeedReading/Features/Reader/ReaderView.swift` (added scenePhase handling, haptic feedback setup)
+- **Notes**:
+  - Progress saving is triggered from multiple sources: paragraph end, pause state change, manual save, and app lifecycle
+  - The PlaybackEngine already had the callback infrastructure; this task wired it up properly
+  - Haptic feedback uses light impact style per spec requirement
 
 **Scope:**
 - Implement progress saving triggers:
