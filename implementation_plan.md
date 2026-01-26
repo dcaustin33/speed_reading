@@ -205,8 +205,41 @@ Implement the core text processing engine.
 
 ## Phase 2: File Import
 
-### - [ ] Task 4: Plain Text and Markdown Import
+### - [x] Task 4: Plain Text and Markdown Import
 Implement file import for .txt and .md files.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/FileImportServiceTests.swift` (29 tests), `Tests/FileImportServiceLoadTests.swift` (21 tests), all passing
+- **Implementation**:
+  - `FileImportError` enum with all error cases (fileNotFound, unsupportedFormat, encodingError, emptyFile, readError, drmProtected, corruptFile, duplicateBook, storageFull) with LocalizedError conformance
+  - `MarkdownStripper` enum with comprehensive markdown syntax removal:
+    - Fenced code blocks, inline code, images, links, headers, bold/italic, horizontal rules, blockquotes, list markers
+    - Preserves text content and paragraph structure
+  - `FileImportService` enum with static methods:
+    - `loadTextFile(from:)` - UTF-8 with fallback to Latin-1, CP1252, ASCII, then UTF-16 variants
+    - `loadMarkdownFile(from:)` - strips markdown, calculates hash from original data
+    - `loadFile(from:fileType:)` - dispatcher for file types
+    - `fileType(from:)` and `validateFileType(url:)` - extension detection
+    - SHA256 hash calculation using CryptoKit
+    - Security-scoped resource access for iOS Files picker
+  - `DocumentPicker` SwiftUI wrapper for UIDocumentPickerViewController:
+    - Filters for .txt, .md, .epub (UTTypes)
+    - Single file selection with copy mode
+    - View modifier for easy sheet presentation
+  - `FileLoadResult` struct with content and hash
+- **Files created**:
+  - `SpeedReading/Services/FileImport/FileImportError.swift`
+  - `SpeedReading/Services/FileImport/MarkdownStripper.swift`
+  - `SpeedReading/Services/FileImport/FileImportService.swift`
+  - `SpeedReading/Services/FileImport/DocumentPicker.swift`
+  - `Tests/FileImportServiceTests.swift` (markdown stripping tests)
+  - `Tests/FileImportServiceLoadTests.swift` (file loading tests)
+- **Files modified**:
+  - `SpeedReading.xcodeproj/project.pbxproj` (added new source files)
+- **Notes**:
+  - EPUB loading intentionally throws unsupportedFormat; EPUB support is Task 5
+  - Encoding fallback prioritizes single-byte encodings (Latin-1, CP1252) before UTF-16 to avoid false decoding of random bytes as CJK characters
+  - Tests are standalone Swift scripts runnable with `swift Tests/*.swift`
 
 **Scope:**
 - Create `FileImportService` protocol and base implementation
