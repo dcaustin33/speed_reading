@@ -77,6 +77,7 @@ struct LibraryView: View {
             Image(systemName: "books.vertical.fill")
                 .font(.system(size: 64))
                 .foregroundStyle(Theme.Colors.secondaryText)
+                .accessibilityHidden(true)
 
             Text("Your library is empty")
                 .font(.title2)
@@ -88,6 +89,8 @@ struct LibraryView: View {
                 .multilineTextAlignment(.center)
         }
         .padding()
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Your library is empty. Tap the plus button to import books from Files.")
     }
 
     private var libraryGridView: some View {
@@ -127,6 +130,7 @@ struct LibraryView: View {
                 .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
         }
         .accessibilityLabel("Import book")
+        .accessibilityHint("Opens file picker to import a book from Files")
     }
 
     private var loadingOverlay: some View {
@@ -145,6 +149,9 @@ struct LibraryView: View {
             .padding(32)
             .background(Theme.Colors.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 16))
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Importing book, please wait")
+            .accessibilityAddTraits(.isStaticText)
         }
     }
 
@@ -159,6 +166,8 @@ struct LibraryView: View {
                     .foregroundStyle(viewModel.hasSelection ? .red : Theme.Colors.secondaryText)
             }
             .disabled(!viewModel.hasSelection)
+            .accessibilityLabel("Delete selected books")
+            .accessibilityHint(viewModel.hasSelection ? "Double tap to delete \(viewModel.selectedCount) book\(viewModel.selectedCount == 1 ? "" : "s")" : "Select books first to delete")
 
             Spacer()
         }
@@ -184,6 +193,8 @@ struct LibraryView: View {
                     }
                 }
                 .foregroundStyle(Theme.Colors.accent)
+                .accessibilityLabel(viewModel.isEditing ? "Done editing" : "Edit library")
+                .accessibilityHint(viewModel.isEditing ? "Exit edit mode" : "Enter edit mode to select and delete books")
             }
         }
     }
@@ -205,6 +216,8 @@ struct LibraryView: View {
             Label("Sort", systemImage: "arrow.up.arrow.down")
                 .foregroundStyle(Theme.Colors.accent)
         }
+        .accessibilityLabel("Sort books")
+        .accessibilityHint("Currently sorted by \(viewModel.sortOrder == .recent ? "recently opened" : "title")")
     }
 
     // MARK: - Actions

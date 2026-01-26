@@ -84,6 +84,9 @@ struct ReaderView: View {
             Text("Loading book...")
                 .foregroundStyle(Theme.Colors.secondaryText)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Loading book, please wait")
+        .accessibilityAddTraits(.isStaticText)
     }
 
     // MARK: - Error View
@@ -93,6 +96,7 @@ struct ReaderView: View {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 48))
                 .foregroundStyle(Theme.Colors.orpHighlight)
+                .accessibilityHidden(true)
 
             Text(message)
                 .foregroundStyle(Theme.Colors.primaryText)
@@ -103,7 +107,11 @@ struct ReaderView: View {
                 router.pop()
             }
             .foregroundStyle(Theme.Colors.accent)
+            .accessibilityLabel("Return to Library")
+            .accessibilityHint("Go back to your book list")
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Error: \(message)")
     }
 
     // MARK: - Reader Content
@@ -156,6 +164,7 @@ struct ReaderView: View {
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel("Open menu")
+            .accessibilityHint("Access navigation, settings, and search")
         }
         .padding(.trailing, 8)
     }
@@ -201,6 +210,7 @@ struct ReaderView: View {
                 .foregroundStyle(Theme.Colors.primaryText)
         }
         .accessibilityLabel("Back to library")
+        .accessibilityHint("Save progress and return to your book list")
     }
 
     // MARK: - Scene Phase Handling

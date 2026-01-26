@@ -122,20 +122,20 @@ struct MenuView: View {
 
                 // Menu items
                 VStack(spacing: 0) {
-                    menuItem(icon: "magnifyingglass", title: "Search in Book") {
+                    menuItem(icon: "magnifyingglass", title: "Search in Book", hint: "Find text within this book") {
                         showMenu = false
                         router.navigateTo(.search(bookId: bookId))
                     }
 
                     // TOC - only shown for EPUB with TOC
                     if hasTOC {
-                        menuItem(icon: "list.bullet", title: "Table of Contents") {
+                        menuItem(icon: "list.bullet", title: "Table of Contents", hint: "Navigate to chapters") {
                             showMenu = false
                             router.navigateTo(.toc(bookId: bookId, currentWordIndex: currentWordIndex))
                         }
                     }
 
-                    menuItem(icon: "gearshape", title: "Settings") {
+                    menuItem(icon: "gearshape", title: "Settings", hint: "Adjust font size and word skip") {
                         showMenu = false
                         router.navigateTo(.settings)
                     }
@@ -208,13 +208,14 @@ struct MenuView: View {
         .padding(.horizontal)
     }
 
-    private func menuItem(icon: String, title: String, action: @escaping () -> Void) -> some View {
+    private func menuItem(icon: String, title: String, hint: String? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: 16) {
                 Image(systemName: icon)
                     .font(.title3)
                     .foregroundStyle(Theme.Colors.accent)
                     .frame(width: 24)
+                    .accessibilityHidden(true)
 
                 Text(title)
                     .font(.body)
@@ -225,9 +226,12 @@ struct MenuView: View {
                 Image(systemName: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(Theme.Colors.secondaryText)
+                    .accessibilityHidden(true)
             }
             .padding()
         }
+        .accessibilityLabel(title)
+        .accessibilityHint(hint ?? "")
     }
 }
 

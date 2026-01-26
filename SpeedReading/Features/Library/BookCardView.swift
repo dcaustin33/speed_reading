@@ -57,6 +57,8 @@ struct BookCardView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(accessibilityValue)
+        .accessibilityHint(isEditing ? (isSelected ? "Double tap to deselect" : "Double tap to select") : "Double tap to open. Long press to select for deletion.")
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
     // MARK: - Subviews
