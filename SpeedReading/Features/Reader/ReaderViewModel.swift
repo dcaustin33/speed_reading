@@ -118,6 +118,20 @@ class ReaderViewModel {
 
     private(set) var isCompleted: Bool = false
 
+    // MARK: - Chapter Overlay State
+
+    /// Whether the chapter overlay is currently visible
+    private(set) var isChapterOverlayVisible: Bool = false
+
+    /// Title of the current chapter being displayed in overlay
+    private(set) var currentChapterTitle: String = ""
+
+    /// Timer for auto-hiding chapter overlay after 2 seconds
+    private var chapterOverlayTimer: Timer?
+
+    /// Tracks whether we've shown the initial chapter (to avoid showing on first load)
+    private var hasShownInitialChapter: Bool = false
+
     // MARK: - Callbacks
 
     /// Called on sentence boundary for haptic feedback
@@ -153,6 +167,10 @@ class ReaderViewModel {
             if state == .paused {
                 self?.saveProgress()
             }
+        }
+
+        playbackEngine.onChapterChange = { [weak self] chapter in
+            self?.handleChapterChange(chapter)
         }
 
         playbackEngine.onComplete = { [weak self] in
@@ -370,6 +388,40 @@ class ReaderViewModel {
         try? libraryDataService.saveLibrary()
     }
 
+    // MARK: - Chapter Transitions
+
+    /// Handles chapter change during playback.
+    /// Per spec (Section 3.7): Show overlay for 2 seconds, playback continues behind it.
+    private func handleChapterChange(_ chapter: Chapter) {
+        // Skip showing overlay on initial load
+        guard hasShownInitialChapter else {
+            hasShownInitialChapter = true
+            return
+        }
+
+        // Show chapter overlay
+        currentChapterTitle = chapter.title
+        isChapterOverlayVisible = true
+
+        // Cancel any existing timer
+        chapterOverlayTimer?.invalidate()
+
+        // Auto-hide after 2 seconds per spec
+        chapterOverlayTimer = Timer.scheduledTimer(
+            withTimeInterval: Theme.Animation.chapterOverlayDuration,
+            repeats: false
+        ) { [weak self] _ in
+            self?.hideChapterOverlay()
+        }
+    }
+
+    /// Hides the chapter overlay
+    private func hideChapterOverlay() {
+        isChapterOverlayVisible = false
+        chapterOverlayTimer?.invalidate()
+        chapterOverlayTimer = nil
+    }
+
     // MARK: - Completion
 
     private func handleCompletion() {
@@ -388,5 +440,7 @@ class ReaderViewModel {
     func onDisappear() {
         playbackEngine.pause()
         saveProgress()
+        chapterOverlayTimer?.invalidate()
+        chapterOverlayTimer = nil
     }
 }

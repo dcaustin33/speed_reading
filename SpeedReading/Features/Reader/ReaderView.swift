@@ -29,6 +29,26 @@ struct ReaderView: View {
                 errorView(message: error)
             } else {
                 readerContent
+
+                // Chapter transition overlay (per spec Section 3.7)
+                // Displayed on top of reader content, playback continues behind it
+                ChapterOverlayView(
+                    chapterTitle: viewModel.currentChapterTitle,
+                    isVisible: viewModel.isChapterOverlayVisible
+                )
+
+                // Completion overlay (per spec Section 3.8)
+                // Only dismissal option is the "Return to Library" button
+                if viewModel.isCompleted {
+                    CompletionOverlayView(
+                        bookTitle: viewModel.bookTitle,
+                        isVisible: viewModel.isCompleted,
+                        onDismiss: {
+                            viewModel.dismissCompletion()
+                            router.pop()
+                        }
+                    )
+                }
             }
         }
         .navigationBarBackButtonHidden(true)
