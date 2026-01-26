@@ -415,8 +415,38 @@ Implement the library data layer with duplicate detection and book management.
 
 ## Phase 3: Library UI
 
-### - [ ] Task 7: Library Screen UI
+### - [x] Task 7: Library Screen UI
 Build the Library screen with grid layout and book management.
+
+- **Completed**: 2026-01-26
+- **Tests**: `Tests/BookCardViewTests.swift` (21 tests), `Tests/LibraryViewTests.swift` (19 tests), all passing (tests deleted after verification)
+- **Implementation**:
+  - `BookCardView` component with cover/placeholder, title (max 2 lines), author (max 1 line), progress bar
+  - Selection indicator with checkmark for edit mode
+  - Accessibility labels and values for book cards
+  - `LibraryViewModel` class managing library state, book loading, sorting, edit mode, and import flow
+  - Full MVVM architecture with @Published properties for reactive UI updates
+  - `LibraryView` with 3-column grid layout using LazyVGrid
+  - Empty state view with book stack icon and instructions
+  - Floating action button (+) for file import via DocumentPicker
+  - Edit mode with multi-select, selection circles, and bottom toolbar with Delete button
+  - Confirmation alert before deletion with proper pluralization
+  - Sort menu in navigation bar (Recently Opened / Title A-Z)
+  - Loading overlay during file import
+  - Error alerts for import failures
+  - Long press gesture to enter edit mode with selection
+  - Tap gesture to navigate to reader or toggle selection in edit mode
+- **Files created**:
+  - `SpeedReading/Features/Library/BookCardView.swift`
+  - `SpeedReading/Features/Library/LibraryViewModel.swift`
+- **Files modified**:
+  - `SpeedReading/Features/Library/LibraryView.swift` (complete rewrite)
+  - `SpeedReading.xcodeproj/project.pbxproj` (added new files to build)
+- **Notes**:
+  - LibraryViewModel integrates with LibraryDataService for persistence
+  - All theme colors from Theme.swift used consistently
+  - Supports all three file types (.txt, .md, .epub) via existing FileImportService and EPUBImportService
+  - Sort preference persisted to settings.json automatically
 
 **Scope:**
 - Implement Library screen layout:

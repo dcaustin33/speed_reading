@@ -40,6 +40,8 @@
 		E81000002B5F1A0000000503 /* TOCParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000503 /* TOCParser.swift */; };
 		E81000002B5F1A0000000504 /* EPUBImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000504 /* EPUBImportService.swift */; };
 		E81000002B5F1A0000000600 /* LibraryDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000600 /* LibraryDataService.swift */; };
+		E81000002B5F1A0000000700 /* BookCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000700 /* BookCardView.swift */; };
+		E81000002B5F1A0000000701 /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000701 /* LibraryViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -77,6 +79,8 @@
 		E81000012B5F1A0000000503 /* TOCParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOCParser.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000504 /* EPUBImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPUBImportService.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000600 /* LibraryDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryDataService.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000000700 /* BookCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookCardView.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000000701 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -215,6 +219,8 @@
 			isa = PBXGroup;
 			children = (
 				E81000012B5F1A0000000006 /* LibraryView.swift */,
+				E81000012B5F1A0000000700 /* BookCardView.swift */,
+				E81000012B5F1A0000000701 /* LibraryViewModel.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -415,6 +421,8 @@
 				E81000002B5F1A0000000503 /* TOCParser.swift in Sources */,
 				E81000002B5F1A0000000504 /* EPUBImportService.swift in Sources */,
 				E81000002B5F1A0000000600 /* LibraryDataService.swift in Sources */,
+				E81000002B5F1A0000000700 /* BookCardView.swift in Sources */,
+				E81000002B5F1A0000000701 /* LibraryViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
