@@ -1,12 +1,10 @@
 import tkinter as tk
-from tkinter import ttk
 from typing import Callable
 
 from speed_reading.utils.constants import (
     BG_COLOR,
     TEXT_COLOR,
     CONTROLS_BG,
-    BUTTON_BG,
     PROGRESS_FILLED,
     PROGRESS_EMPTY,
     WPM_MIN,
@@ -15,7 +13,270 @@ from speed_reading.utils.constants import (
     PAUSE_MIN,
     PAUSE_MAX,
     PAUSE_DEFAULT,
+    ORP_COLOR,
 )
+
+# Enhanced color palette
+ACCENT_COLOR = "#4a90d9"
+ACCENT_HOVER = "#5aa0e9"
+BUTTON_NORMAL = "#3a3a3a"
+BUTTON_HOVER = "#4a4a4a"
+BUTTON_ACTIVE = "#2a2a2a"
+SUBTLE_TEXT = "#888888"
+
+
+class IconButton(tk.Canvas):
+    """Custom styled button with icon."""
+
+    def __init__(
+        self,
+        parent,
+        icon: str,
+        command: Callable[[], None] | None = None,
+        size: int = 44,
+        is_primary: bool = False,
+        **kwargs,
+    ):
+        super().__init__(
+            parent,
+            width=size,
+            height=size,
+            bg=CONTROLS_BG,
+            highlightthickness=0,
+            **kwargs,
+        )
+
+        self._command = command
+        self._size = size
+        self._icon = icon
+        self._is_primary = is_primary
+        self._is_hovered = False
+        self._is_pressed = False
+
+        self._draw()
+
+        self.bind("<Enter>", self._on_enter)
+        self.bind("<Leave>", self._on_leave)
+        self.bind("<ButtonPress-1>", self._on_press)
+        self.bind("<ButtonRelease-1>", self._on_release)
+
+    def _get_colors(self):
+        if self._is_primary:
+            if self._is_pressed:
+                return ACCENT_COLOR, "#ffffff"
+            elif self._is_hovered:
+                return ACCENT_HOVER, "#ffffff"
+            else:
+                return ACCENT_COLOR, "#ffffff"
+        else:
+            if self._is_pressed:
+                return BUTTON_ACTIVE, TEXT_COLOR
+            elif self._is_hovered:
+                return BUTTON_HOVER, TEXT_COLOR
+            else:
+                return BUTTON_NORMAL, SUBTLE_TEXT
+
+    def _draw(self):
+        self.delete("all")
+        bg_color, fg_color = self._get_colors()
+
+        # Draw rounded rectangle
+        r = 8
+        x0, y0 = 2, 2
+        x1, y1 = self._size - 2, self._size - 2
+
+        # Create rounded rectangle using arcs and rectangles
+        self.create_arc(x0, y0, x0 + 2 * r, y0 + 2 * r, start=90, extent=90, fill=bg_color, outline="")
+        self.create_arc(x1 - 2 * r, y0, x1, y0 + 2 * r, start=0, extent=90, fill=bg_color, outline="")
+        self.create_arc(x0, y1 - 2 * r, x0 + 2 * r, y1, start=180, extent=90, fill=bg_color, outline="")
+        self.create_arc(x1 - 2 * r, y1 - 2 * r, x1, y1, start=270, extent=90, fill=bg_color, outline="")
+        self.create_rectangle(x0 + r, y0, x1 - r, y1, fill=bg_color, outline="")
+        self.create_rectangle(x0, y0 + r, x1, y1 - r, fill=bg_color, outline="")
+
+        # Draw icon
+        self.create_text(
+            self._size // 2,
+            self._size // 2,
+            text=self._icon,
+            font=("Arial", 16),
+            fill=fg_color,
+        )
+
+    def _on_enter(self, event):
+        self._is_hovered = True
+        self._draw()
+
+    def _on_leave(self, event):
+        self._is_hovered = False
+        self._is_pressed = False
+        self._draw()
+
+    def _on_press(self, event):
+        self._is_pressed = True
+        self._draw()
+
+    def _on_release(self, event):
+        self._is_pressed = False
+        self._draw()
+        if self._is_hovered and self._command:
+            self._command()
+
+    def set_icon(self, icon: str):
+        self._icon = icon
+        self._draw()
+
+
+class ModernSlider(tk.Canvas):
+    """Custom styled slider."""
+
+    def __init__(
+        self,
+        parent,
+        min_val: float,
+        max_val: float,
+        initial: float,
+        on_change: Callable[[float], None] | None = None,
+        width: int = 160,
+        height: int = 36,
+        resolution: float = 1.0,
+        label: str = "",
+        unit: str = "",
+        **kwargs,
+    ):
+        super().__init__(
+            parent,
+            width=width,
+            height=height,
+            bg=CONTROLS_BG,
+            highlightthickness=0,
+            **kwargs,
+        )
+
+        self._min = min_val
+        self._max = max_val
+        self._value = initial
+        self._on_change = on_change
+        self._resolution = resolution
+        self._label = label
+        self._unit = unit
+        self._width = width
+        self._height = height
+        self._dragging = False
+
+        self._track_y = height - 10
+        self._track_start = 10
+        self._track_end = width - 10
+
+        self._draw()
+
+        self.bind("<ButtonPress-1>", self._on_press)
+        self.bind("<B1-Motion>", self._on_drag)
+        self.bind("<ButtonRelease-1>", self._on_release)
+
+    def _value_to_x(self, value: float) -> float:
+        ratio = (value - self._min) / (self._max - self._min)
+        return self._track_start + ratio * (self._track_end - self._track_start)
+
+    def _x_to_value(self, x: float) -> float:
+        ratio = (x - self._track_start) / (self._track_end - self._track_start)
+        ratio = max(0, min(1, ratio))
+        value = self._min + ratio * (self._max - self._min)
+        # Apply resolution
+        if self._resolution >= 1:
+            value = round(value / self._resolution) * self._resolution
+        else:
+            decimals = len(str(self._resolution).split(".")[-1])
+            value = round(value / self._resolution) * self._resolution
+            value = round(value, decimals)
+        return max(self._min, min(self._max, value))
+
+    def _draw(self):
+        self.delete("all")
+
+        # Draw label and value
+        if self._label:
+            self.create_text(
+                self._track_start,
+                8,
+                text=self._label,
+                font=("SF Pro Display", 11),
+                fill=SUBTLE_TEXT,
+                anchor="w",
+            )
+
+        # Format value display
+        if self._resolution >= 1:
+            val_text = f"{int(self._value)}{self._unit}"
+        else:
+            val_text = f"{self._value:.2f}{self._unit}"
+
+        self.create_text(
+            self._track_end,
+            8,
+            text=val_text,
+            font=("SF Pro Display", 11, "bold"),
+            fill=TEXT_COLOR,
+            anchor="e",
+        )
+
+        # Draw track background
+        self.create_line(
+            self._track_start,
+            self._track_y,
+            self._track_end,
+            self._track_y,
+            fill=PROGRESS_EMPTY,
+            width=4,
+            capstyle="round",
+        )
+
+        # Draw filled track
+        thumb_x = self._value_to_x(self._value)
+        self.create_line(
+            self._track_start,
+            self._track_y,
+            thumb_x,
+            self._track_y,
+            fill=ACCENT_COLOR,
+            width=4,
+            capstyle="round",
+        )
+
+        # Draw thumb
+        self.create_oval(
+            thumb_x - 7,
+            self._track_y - 7,
+            thumb_x + 7,
+            self._track_y + 7,
+            fill=TEXT_COLOR,
+            outline="",
+        )
+
+    def _on_press(self, event):
+        self._dragging = True
+        self._update_value(event.x)
+
+    def _on_drag(self, event):
+        if self._dragging:
+            self._update_value(event.x)
+
+    def _on_release(self, event):
+        self._dragging = False
+
+    def _update_value(self, x: float):
+        new_value = self._x_to_value(x)
+        if new_value != self._value:
+            self._value = new_value
+            self._draw()
+            if self._on_change:
+                self._on_change(self._value)
+
+    def set_value(self, value: float):
+        self._value = max(self._min, min(self._max, value))
+        self._draw()
+
+    def get_value(self) -> float:
+        return self._value
 
 
 class PlaybackControls(tk.Frame):
@@ -38,63 +299,30 @@ class PlaybackControls(tk.Frame):
         self._on_play_pause = on_play_pause
         self._is_playing = False
 
-        # Button style
-        btn_opts = {
-            "bg": BUTTON_BG,
-            "fg": TEXT_COLOR,
-            "activebackground": "#4d4d4d",
-            "activeforeground": TEXT_COLOR,
-            "relief": "flat",
-            "padx": 10,
-            "pady": 5,
-            "font": ("Arial", 14),
-        }
-
-        # Create buttons frame
+        # Create centered button container
         btn_frame = tk.Frame(self, bg=CONTROLS_BG)
-        btn_frame.pack(pady=10)
+        btn_frame.pack(pady=15)
 
-        # Previous paragraph
-        self.btn_prev_para = tk.Button(
-            btn_frame, text="⏮", command=on_prev_para, **btn_opts
-        )
-        self.btn_prev_para.pack(side=tk.LEFT, padx=2)
+        # Button definitions: (icon, callback, is_primary)
+        buttons = [
+            ("⏮", on_prev_para, False),
+            ("⏪", on_prev_sent, False),
+            ("◂", on_rewind, False),
+            ("▶", self._handle_play_pause, True),  # Play button - primary
+            ("▸", on_forward, False),
+            ("⏩", on_next_sent, False),
+            ("⏭", on_next_para, False),
+        ]
 
-        # Previous sentence
-        self.btn_prev_sent = tk.Button(
-            btn_frame, text="⏪", command=on_prev_sent, **btn_opts
-        )
-        self.btn_prev_sent.pack(side=tk.LEFT, padx=2)
+        self._buttons = []
+        for i, (icon, cmd, is_primary) in enumerate(buttons):
+            size = 56 if is_primary else 44
+            btn = IconButton(btn_frame, icon, cmd, size=size, is_primary=is_primary)
+            btn.pack(side=tk.LEFT, padx=4 if not is_primary else 12)
+            self._buttons.append(btn)
 
-        # Rewind
-        self.btn_rewind = tk.Button(
-            btn_frame, text="◀", command=on_rewind, **btn_opts
-        )
-        self.btn_rewind.pack(side=tk.LEFT, padx=2)
-
-        # Play/Pause
-        self.btn_play = tk.Button(
-            btn_frame, text="▶", command=self._handle_play_pause, width=4, **btn_opts
-        )
-        self.btn_play.pack(side=tk.LEFT, padx=10)
-
-        # Forward
-        self.btn_forward = tk.Button(
-            btn_frame, text="▶", command=on_forward, **btn_opts
-        )
-        self.btn_forward.pack(side=tk.LEFT, padx=2)
-
-        # Next sentence
-        self.btn_next_sent = tk.Button(
-            btn_frame, text="⏩", command=on_next_sent, **btn_opts
-        )
-        self.btn_next_sent.pack(side=tk.LEFT, padx=2)
-
-        # Next paragraph
-        self.btn_next_para = tk.Button(
-            btn_frame, text="⏭", command=on_next_para, **btn_opts
-        )
-        self.btn_next_para.pack(side=tk.LEFT, padx=2)
+        # Store play button reference for updating icon
+        self._play_btn = self._buttons[3]
 
     def _handle_play_pause(self):
         if self._on_play_pause:
@@ -103,7 +331,7 @@ class PlaybackControls(tk.Frame):
     def set_playing(self, playing: bool):
         """Update the play/pause button state."""
         self._is_playing = playing
-        self.btn_play.config(text="⏸" if playing else "▶")
+        self._play_btn.set_icon("⏸" if playing else "▶")
 
 
 class SettingsSliders(tk.Frame):
@@ -121,72 +349,51 @@ class SettingsSliders(tk.Frame):
         self._on_wpm_change = on_wpm_change
         self._on_pause_change = on_pause_change
 
+        # Center container
+        container = tk.Frame(self, bg=CONTROLS_BG)
+        container.pack(pady=10)
+
         # WPM slider
-        wpm_frame = tk.Frame(self, bg=CONTROLS_BG)
-        wpm_frame.pack(side=tk.LEFT, padx=20, pady=5)
-
-        tk.Label(
-            wpm_frame, text="WPM:", bg=CONTROLS_BG, fg=TEXT_COLOR, font=("Arial", 10)
-        ).pack(side=tk.LEFT)
-
-        self.wpm_var = tk.IntVar(value=WPM_DEFAULT)
-        self.wpm_slider = tk.Scale(
-            wpm_frame,
-            from_=WPM_MIN,
-            to=WPM_MAX,
-            orient=tk.HORIZONTAL,
-            variable=self.wpm_var,
-            command=self._on_wpm_slider,
-            bg=CONTROLS_BG,
-            fg=TEXT_COLOR,
-            highlightthickness=0,
-            troughcolor=PROGRESS_EMPTY,
-            length=150,
+        self.wpm_slider = ModernSlider(
+            container,
+            min_val=WPM_MIN,
+            max_val=WPM_MAX,
+            initial=WPM_DEFAULT,
+            on_change=self._on_wpm_slider,
+            width=200,
+            label="WPM",
+            unit="",
+            resolution=25,
         )
-        self.wpm_slider.pack(side=tk.LEFT, padx=5)
+        self.wpm_slider.pack(side=tk.LEFT, padx=30)
 
         # Pause slider
-        pause_frame = tk.Frame(self, bg=CONTROLS_BG)
-        pause_frame.pack(side=tk.LEFT, padx=20, pady=5)
-
-        tk.Label(
-            pause_frame, text="Pause:", bg=CONTROLS_BG, fg=TEXT_COLOR, font=("Arial", 10)
-        ).pack(side=tk.LEFT)
-
-        self.pause_var = tk.DoubleVar(value=PAUSE_DEFAULT)
-        self.pause_slider = tk.Scale(
-            pause_frame,
-            from_=PAUSE_MIN,
-            to=PAUSE_MAX,
-            orient=tk.HORIZONTAL,
-            variable=self.pause_var,
-            command=self._on_pause_slider,
-            bg=CONTROLS_BG,
-            fg=TEXT_COLOR,
-            highlightthickness=0,
-            troughcolor=PROGRESS_EMPTY,
-            length=100,
+        self.pause_slider = ModernSlider(
+            container,
+            min_val=PAUSE_MIN,
+            max_val=PAUSE_MAX,
+            initial=PAUSE_DEFAULT,
+            on_change=self._on_pause_slider,
+            width=180,
+            label="Pause",
+            unit="s",
             resolution=0.25,
         )
-        self.pause_slider.pack(side=tk.LEFT, padx=5)
-
-        tk.Label(
-            pause_frame, text="s", bg=CONTROLS_BG, fg=TEXT_COLOR, font=("Arial", 10)
-        ).pack(side=tk.LEFT)
+        self.pause_slider.pack(side=tk.LEFT, padx=30)
 
     def _on_wpm_slider(self, value):
         if self._on_wpm_change:
-            self._on_wpm_change(int(float(value)))
+            self._on_wpm_change(int(value))
 
     def _on_pause_slider(self, value):
         if self._on_pause_change:
             self._on_pause_change(float(value))
 
     def set_wpm(self, wpm: int):
-        self.wpm_var.set(wpm)
+        self.wpm_slider.set_value(wpm)
 
     def set_pause(self, pause: float):
-        self.pause_var.set(pause)
+        self.pause_slider.set_value(pause)
 
 
 class ProgressBar(tk.Frame):
@@ -195,24 +402,36 @@ class ProgressBar(tk.Frame):
     def __init__(self, parent, **kwargs):
         super().__init__(parent, bg=CONTROLS_BG, **kwargs)
 
-        # Progress canvas
+        # Progress canvas with rounded corners
         self.canvas = tk.Canvas(
             self,
             bg=CONTROLS_BG,
             highlightthickness=0,
-            height=20,
+            height=12,
         )
-        self.canvas.pack(fill=tk.X, padx=10, pady=5)
+        self.canvas.pack(fill=tk.X, padx=40, pady=(15, 8))
 
-        # Stats label
-        self.stats_label = tk.Label(
-            self,
-            text="Word 0/0  |  0:00",
+        # Stats in a nicer format
+        stats_frame = tk.Frame(self, bg=CONTROLS_BG)
+        stats_frame.pack(pady=(0, 10))
+
+        self.word_label = tk.Label(
+            stats_frame,
+            text="Word 0 of 0",
             bg=CONTROLS_BG,
             fg=TEXT_COLOR,
-            font=("Arial", 10),
+            font=("SF Pro Display", 12),
         )
-        self.stats_label.pack(pady=2)
+        self.word_label.pack(side=tk.LEFT, padx=20)
+
+        self.time_label = tk.Label(
+            stats_frame,
+            text="0:00 remaining",
+            bg=CONTROLS_BG,
+            fg=SUBTLE_TEXT,
+            font=("SF Pro Display", 12),
+        )
+        self.time_label.pack(side=tk.LEFT, padx=20)
 
         self.canvas.bind("<Configure>", self._on_resize)
         self._progress = 0.0
@@ -229,22 +448,34 @@ class ProgressBar(tk.Frame):
         if width <= 1:
             return
 
-        # Background
-        self.canvas.create_rectangle(
-            5, 5, width - 5, height - 5, fill=PROGRESS_EMPTY, outline=""
+        r = 4  # Corner radius
+        y0, y1 = 2, height - 2
+
+        # Background track with rounded ends
+        self.canvas.create_line(
+            r + 2, height // 2, width - r - 2, height // 2,
+            fill=PROGRESS_EMPTY,
+            width=height - 4,
+            capstyle="round",
         )
 
         # Filled portion
-        filled_width = max(0, (width - 10) * self._progress)
-        if filled_width > 0:
-            self.canvas.create_rectangle(
-                5, 5, 5 + filled_width, height - 5, fill=PROGRESS_FILLED, outline=""
+        filled_width = max(0, (width - 4) * self._progress)
+        if filled_width > r * 2:
+            self.canvas.create_line(
+                r + 2, height // 2, r + filled_width, height // 2,
+                fill=ACCENT_COLOR,
+                width=height - 4,
+                capstyle="round",
             )
 
     def set_progress(self, progress: float, current: int, total: int, time_remaining: float):
         """Update progress display."""
         self._progress = max(0.0, min(1.0, progress))
         self._draw_progress()
+
+        # Format stats
+        self.word_label.config(text=f"Word {current} of {total}")
 
         # Format time remaining
         minutes = int(time_remaining // 60)
@@ -256,4 +487,4 @@ class ProgressBar(tk.Frame):
         else:
             time_str = f"{minutes}:{seconds:02d}"
 
-        self.stats_label.config(text=f"Word {current}/{total}  |  {time_str}")
+        self.time_label.config(text=f"{time_str} remaining")

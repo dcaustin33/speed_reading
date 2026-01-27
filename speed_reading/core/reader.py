@@ -104,6 +104,9 @@ class Reader:
         delay = self._word_delay_ms()
         if word.paragraph_end:
             delay += int(self._paragraph_pause * 1000)
+        elif word.sentence_end:
+            # Pause 4x normal word time at sentence ends
+            delay *= 4
 
         # Move to next word
         self._current_index += 1
@@ -242,3 +245,59 @@ class Reader:
         self.current_index = index
         if self.on_word and self.current_word:
             self.on_word(self.current_word, self._current_index)
+
+    def find_phrase(self, phrase: str) -> list[tuple[int, str]]:
+        """Find all occurrences of a phrase (case-sensitive).
+
+        Returns list of (word_index, context_snippet) tuples where context
+        shows ~5 words before and after the match with the phrase marked.
+        """
+        if not phrase.strip():
+            return []
+
+        search_words = phrase.split()
+        if not search_words:
+            return []
+
+        results = []
+        doc_words = self.document.words
+        total = self.document.total_words
+        phrase_len = len(search_words)
+
+        # Scan for matching consecutive sequences
+        i = 0
+        while i <= total - phrase_len:
+            # Check if this position starts a match
+            match = True
+            for j, search_word in enumerate(search_words):
+                if doc_words[i + j].text != search_word:
+                    match = False
+                    break
+
+            if match:
+                # Build context: 5 words before, the phrase, 5 words after
+                start_ctx = max(0, i - 5)
+                end_ctx = min(total, i + phrase_len + 5)
+
+                context_parts = []
+                for k in range(start_ctx, end_ctx):
+                    word_text = doc_words[k].text
+                    if k == i:
+                        context_parts.append(f"[{word_text}")
+                    elif k == i + phrase_len - 1:
+                        context_parts.append(f"{word_text}]")
+                    else:
+                        context_parts.append(word_text)
+
+                context = " ".join(context_parts)
+                if start_ctx > 0:
+                    context = "..." + context
+                if end_ctx < total:
+                    context = context + "..."
+
+                results.append((i, context))
+                i += phrase_len  # Skip past this match
+            else:
+                i += 1
+
+        return results
