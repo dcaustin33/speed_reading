@@ -33,10 +33,15 @@ enum ORPDisplayLogic {
     /// Returns the offset in terms of character widths (for monospace font).
     /// Negative value means shift left, positive means shift right.
     static func calculateCenteringOffset(wordLength: Int, orpIndex: Int) -> Double {
-        // For a word at position [0, 1, 2, ..., n-1], the ORP is at position orpIndex.
-        // We want the ORP character to be at the horizontal center.
-        // The offset shifts the word so the ORP character's center aligns with screen center.
-        return -Double(orpIndex) - 0.5
+        // The HStack is already centered in the ZStack, so the word's midpoint
+        // is at the screen center. We need to shift so the ORP character's center
+        // lands at screen center instead.
+        //
+        // Word midpoint is at wordLength/2 chars from left edge.
+        // ORP character center is at (orpIndex + 0.5) chars from left edge.
+        // Shift = midpoint - orpCenter = wordLength/2 - orpIndex - 0.5
+        let wordCenter = Double(wordLength) / 2.0
+        return wordCenter - Double(orpIndex) - 0.5
     }
 
     /// Determines if a word needs to be chunked based on available width.

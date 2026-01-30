@@ -52,96 +52,97 @@ struct MenuView: View {
             Theme.Colors.background.opacity(0.95)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-                // Close button
-                HStack {
-                    Spacer()
-                    Button {
-                        showMenu = false
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.title2)
-                            .foregroundStyle(Theme.Colors.primaryText)
-                            .frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("Close menu")
-                }
-                .padding(.trailing)
-
-                // Navigation controls
-                HStack(spacing: 16) {
-                    navigationButton(symbol: "backward.end.fill", label: "Previous paragraph") {
-                        viewModel?.previousParagraph()
-                    }
-                    navigationButton(symbol: "backward.fill", label: "Previous sentence") {
-                        viewModel?.previousSentence()
-                    }
-                    navigationButton(symbol: "chevron.left", label: "Rewind \(wordSkip) words") {
-                        viewModel?.skipBackward()
-                    }
-                    navigationButton(symbol: "chevron.right", label: "Forward \(wordSkip) words") {
-                        viewModel?.skipForward()
-                    }
-                    navigationButton(symbol: "forward.fill", label: "Next sentence") {
-                        viewModel?.nextSentence()
-                    }
-                    navigationButton(symbol: "forward.end.fill", label: "Next paragraph") {
-                        viewModel?.nextParagraph()
-                    }
-                }
-                .padding()
-                .background(Theme.Colors.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-                .padding(.horizontal)
-
-                // WPM Slider
-                sliderSection(
-                    title: "WPM",
-                    value: wpm,
-                    range: 100...800,
-                    step: 25,
-                    minLabel: "100",
-                    maxLabel: "800",
-                    valueLabel: "\(Int(wpm.wrappedValue))"
-                )
-
-                // Paragraph Pause Slider
-                sliderSection(
-                    title: "Paragraph Pause",
-                    value: paragraphPause,
-                    range: 0.25...3.0,
-                    step: 0.25,
-                    minLabel: "0.25s",
-                    maxLabel: "3.0s",
-                    valueLabel: formatPause(paragraphPause.wrappedValue)
-                )
-
-                Divider()
-                    .background(Theme.Colors.trackGray)
-                    .padding(.horizontal)
-
-                // Menu items
-                VStack(spacing: 0) {
-                    menuItem(icon: "magnifyingglass", title: "Search in Book", hint: "Find text within this book") {
-                        showMenu = false
-                        router.navigateTo(.search(bookId: bookId))
-                    }
-
-                    // TOC - only shown for EPUB with TOC
-                    if hasTOC {
-                        menuItem(icon: "list.bullet", title: "Table of Contents", hint: "Navigate to chapters") {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Close button
+                    HStack {
+                        Spacer()
+                        Button {
                             showMenu = false
-                            router.navigateTo(.toc(bookId: bookId, currentWordIndex: currentWordIndex))
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.title2)
+                                .foregroundStyle(Theme.Colors.primaryText)
+                                .frame(width: 44, height: 44)
+                        }
+                        .accessibilityLabel("Close menu")
+                    }
+                    .padding(.trailing)
+
+                    // Navigation controls
+                    HStack(spacing: 16) {
+                        navigationButton(symbol: "backward.end.fill", label: "Previous paragraph") {
+                            viewModel?.previousParagraph()
+                        }
+                        navigationButton(symbol: "backward.fill", label: "Previous sentence") {
+                            viewModel?.previousSentence()
+                        }
+                        navigationButton(symbol: "chevron.left", label: "Rewind \(wordSkip) words") {
+                            viewModel?.skipBackward()
+                        }
+                        navigationButton(symbol: "chevron.right", label: "Forward \(wordSkip) words") {
+                            viewModel?.skipForward()
+                        }
+                        navigationButton(symbol: "forward.fill", label: "Next sentence") {
+                            viewModel?.nextSentence()
+                        }
+                        navigationButton(symbol: "forward.end.fill", label: "Next paragraph") {
+                            viewModel?.nextParagraph()
                         }
                     }
+                    .padding()
+                    .background(Theme.Colors.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal)
 
-                    menuItem(icon: "gearshape", title: "Settings", hint: "Adjust font size and word skip") {
-                        showMenu = false
-                        router.navigateTo(.settings)
+                    // WPM Slider
+                    sliderSection(
+                        title: "WPM",
+                        value: wpm,
+                        range: 100...800,
+                        step: 25,
+                        minLabel: "100",
+                        maxLabel: "800",
+                        valueLabel: "\(Int(wpm.wrappedValue))"
+                    )
+
+                    // Paragraph Pause Slider
+                    sliderSection(
+                        title: "Paragraph Pause",
+                        value: paragraphPause,
+                        range: 0.25...3.0,
+                        step: 0.25,
+                        minLabel: "0.25s",
+                        maxLabel: "3.0s",
+                        valueLabel: formatPause(paragraphPause.wrappedValue)
+                    )
+
+                    Divider()
+                        .background(Theme.Colors.trackGray)
+                        .padding(.horizontal)
+
+                    // Menu items
+                    VStack(spacing: 0) {
+                        menuItem(icon: "magnifyingglass", title: "Search in Book", hint: "Find text within this book") {
+                            showMenu = false
+                            router.navigateTo(.search(bookId: bookId))
+                        }
+
+                        // TOC - only shown for EPUB with TOC
+                        if hasTOC {
+                            menuItem(icon: "list.bullet", title: "Table of Contents", hint: "Navigate to chapters") {
+                                showMenu = false
+                                router.navigateTo(.toc(bookId: bookId, currentWordIndex: currentWordIndex))
+                            }
+                        }
+
+                        menuItem(icon: "gearshape", title: "Settings", hint: "Adjust font size and word skip") {
+                            showMenu = false
+                            router.navigateTo(.settings)
+                        }
                     }
                 }
-
-                Spacer()
+                .padding(.bottom, 24)
             }
         }
         .presentationBackground(Theme.Colors.background.opacity(0.95))

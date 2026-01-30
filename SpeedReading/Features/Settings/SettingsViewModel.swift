@@ -4,6 +4,7 @@ import Foundation
 /// Manages font size and word skip settings with immediate persistence.
 /// All settings are global (apply to all books) per spec.
 @Observable
+@MainActor
 class SettingsViewModel {
     // MARK: - Dependencies
 

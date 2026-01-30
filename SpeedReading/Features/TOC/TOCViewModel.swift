@@ -7,6 +7,7 @@ let TOCJumpToBookIdKey = "TOCJumpToBookId"
 /// View model for the Table of Contents screen.
 /// Handles chapter loading, current chapter detection, and navigation.
 @Observable
+@MainActor
 class TOCViewModel {
     // MARK: - Dependencies
 

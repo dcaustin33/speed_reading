@@ -1,7 +1,7 @@
 import Foundation
 
 /// Represents a chapter in an EPUB document
-struct Chapter: Equatable, Hashable {
+struct Chapter: Equatable, Hashable, Codable {
     /// Chapter title from TOC
     let title: String
 

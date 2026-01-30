@@ -4,12 +4,6 @@ struct LibraryView: View {
     @EnvironmentObject var router: NavigationRouter
     @StateObject private var viewModel = LibraryViewModel()
 
-    private let columns = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
-    ]
-
     var body: some View {
         ZStack {
             Theme.Colors.background
@@ -94,26 +88,28 @@ struct LibraryView: View {
     }
 
     private var libraryGridView: some View {
-        ScrollView {
-            LazyVGrid(columns: columns, spacing: 20) {
-                ForEach(viewModel.sortedBooks) { book in
-                    BookCardView(
-                        book: book,
-                        isSelected: viewModel.selectedBookIds.contains(book.id),
-                        isEditing: viewModel.isEditing,
-                        coverImage: viewModel.loadCoverImage(for: book)
-                    )
-                    .onTapGesture {
-                        handleBookTap(book)
-                    }
-                    .onLongPressGesture {
-                        handleBookLongPress(book)
+        GeometryReader { geometry in
+            ScrollView {
+                LazyVGrid(columns: LayoutHelper.libraryGridColumns(for: geometry.size.width), spacing: 20) {
+                    ForEach(viewModel.sortedBooks) { book in
+                        BookCardView(
+                            book: book,
+                            isSelected: viewModel.selectedBookIds.contains(book.id),
+                            isEditing: viewModel.isEditing,
+                            coverImage: viewModel.loadCoverImage(for: book)
+                        )
+                        .onTapGesture {
+                            handleBookTap(book)
+                        }
+                        .onLongPressGesture {
+                            handleBookLongPress(book)
+                        }
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, viewModel.isEditing ? 100 : 80)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 16)
-            .padding(.bottom, viewModel.isEditing ? 100 : 80)
         }
     }
 

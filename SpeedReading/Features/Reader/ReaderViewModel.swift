@@ -199,12 +199,15 @@ class ReaderViewModel {
     private func performLoadBook() async {
         isLoading = true
         errorMessage = nil
+        print("[Reader] performLoadBook started for bookId=\(bookId)")
 
         do {
             try libraryDataService.loadLibrary()
+            print("[Reader] Library loaded OK")
 
             // Open book (validates hash, updates dateLastOpened)
             guard let openResult = try libraryDataService.openBook(bookId) else {
+                print("[Reader] openBook returned nil — book not found or file deleted")
                 errorMessage = "This book is no longer available."
                 isLoading = false
                 return
@@ -212,55 +215,77 @@ class ReaderViewModel {
 
             let book = openResult.book
             self.book = book
+            print("[Reader] Book opened: '\(book.title)', fileType=\(book.fileType), totalWords=\(book.totalWords), currentWordIndex=\(book.currentWordIndex), hashChanged=\(openResult.hashChanged)")
 
             // Load settings from library
             let settings = libraryDataService.settings
             playbackEngine.wpm = settings.wpm
             playbackEngine.paragraphPause = settings.paragraphPause
             playbackEngine.wordSkip = settings.wordSkip
+            print("[Reader] Settings applied: wpm=\(settings.wpm), paragraphPause=\(settings.paragraphPause), wordSkip=\(settings.wordSkip)")
 
             // Load book content
             let bookFileURL = libraryDataService.bookFileURL(for: book.id, fileType: book.fileType)
+            print("[Reader] Book file URL: \(bookFileURL.path)")
+            print("[Reader] File exists: \(FileManager.default.fileExists(atPath: bookFileURL.path))")
             let content = try String(contentsOf: bookFileURL, encoding: .utf8)
+            print("[Reader] Content loaded, length=\(content.count) chars")
 
             // Tokenize with chapter info if EPUB
             let chapters = await loadChapters(for: book, content: content)
+            print("[Reader] Chapters loaded: \(chapters?.count ?? 0) chapters (isNil=\(chapters == nil))")
             let document = TokenizerService.tokenize(text: content, chapters: chapters)
             self.document = document
+            print("[Reader] Tokenized: \(document.totalWords) words, docChapters=\(document.chapters?.count ?? 0)")
 
             // Check for search or TOC jump position first (takes priority)
             var resumeIndex: Int
             if let searchJumpIndex = SearchViewModel.getAndClearJumpPosition(for: bookId) {
                 // Jump directly to searched position (no paragraph alignment per spec)
                 resumeIndex = min(searchJumpIndex, max(0, document.totalWords - 1))
+                print("[Reader] Resuming from search jump: requested=\(searchJumpIndex), clamped=\(resumeIndex)")
             } else if let tocJumpIndex = TOCViewModel.getAndClearJumpPosition(for: bookId) {
                 // Jump directly to chapter start (no paragraph alignment needed, it's already at chapter start)
                 resumeIndex = min(tocJumpIndex, max(0, document.totalWords - 1))
+                print("[Reader] Resuming from TOC jump: requested=\(tocJumpIndex), clamped=\(resumeIndex)")
             } else {
                 // Normal resume: use saved position
                 resumeIndex = book.currentWordIndex
+                print("[Reader] Normal resume: savedIndex=\(book.currentWordIndex)")
 
                 // If hash changed, we already reset to 0 in openBook
                 if openResult.hashChanged {
                     resumeIndex = 0
+                    print("[Reader] Hash changed, reset to 0")
                 }
 
                 // Find paragraph start per spec (Section 6.4)
+                let beforeAlign = resumeIndex
                 resumeIndex = findParagraphStart(from: resumeIndex, in: document)
+                print("[Reader] Paragraph alignment: \(beforeAlign) -> \(resumeIndex)")
             }
+
+            print("[Reader] Final resumeIndex=\(resumeIndex), totalWords=\(document.totalWords)")
 
             // Load document into playback engine (always starts paused)
             playbackEngine.loadDocument(document, startAt: resumeIndex)
+            print("[Reader] Document loaded into engine, engineWordIndex=\(playbackEngine.currentWordIndex)")
 
             // Update display
             if let word = playbackEngine.currentWord {
                 currentWord = word.text
                 currentOrpIndex = word.orpIndex
+                print("[Reader] Initial display word: '\(word.text)', orpIndex=\(word.orpIndex)")
+            } else {
+                print("[Reader] WARNING: currentWord is nil after loadDocument!")
             }
 
             isLoading = false
+            print("[Reader] performLoadBook completed successfully")
 
         } catch {
+            print("[Reader] ERROR in performLoadBook: \(error)")
+            print("[Reader] Error type: \(type(of: error))")
             errorMessage = "Could not load book: \(error.localizedDescription)"
             isLoading = false
         }

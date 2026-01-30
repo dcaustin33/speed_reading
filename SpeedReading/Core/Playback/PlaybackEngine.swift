@@ -10,6 +10,7 @@ enum PlaybackState: Equatable {
 /// Core playback engine for managing word-by-word display timing
 /// Handles state machine, timing, navigation, and callbacks for the reader
 @Observable
+@MainActor
 class PlaybackEngine {
     // MARK: - State
 
@@ -18,23 +19,26 @@ class PlaybackEngine {
     private var document: Document?
 
     // MARK: - Settings
+    // NOTE: Using private backing storage + computed properties because
+    // @Observable's withMutation wrapper re-enters on didSet self-assignment,
+    // causing infinite recursion / stack overflow.
 
-    var wpm: Int = 300 {
-        didSet {
-            wpm = max(100, min(800, wpm))
-        }
+    private var _wpm: Int = 300
+    var wpm: Int {
+        get { _wpm }
+        set { _wpm = max(100, min(800, newValue)) }
     }
 
-    var paragraphPause: Double = 1.0 {
-        didSet {
-            paragraphPause = max(0.25, min(3.0, paragraphPause))
-        }
+    private var _paragraphPause: Double = 1.0
+    var paragraphPause: Double {
+        get { _paragraphPause }
+        set { _paragraphPause = max(0.25, min(3.0, newValue)) }
     }
 
-    var wordSkip: Int = 5 {
-        didSet {
-            wordSkip = max(1, min(20, wordSkip))
-        }
+    private var _wordSkip: Int = 5
+    var wordSkip: Int {
+        get { _wordSkip }
+        set { _wordSkip = max(1, min(20, newValue)) }
     }
 
     // MARK: - Callbacks
@@ -46,10 +50,9 @@ class PlaybackEngine {
     var onComplete: (() -> Void)?
     var onStateChange: ((PlaybackState) -> Void)?
 
-    // MARK: - Timer
+    // MARK: - Playback Task
 
-    private var timer: DispatchSourceTimer?
-    private let timerQueue = DispatchQueue(label: "com.speedreading.playback", qos: .userInteractive)
+    private var playbackTask: Task<Void, Never>?
 
     // MARK: - Computed Properties
 
@@ -131,15 +134,30 @@ class PlaybackEngine {
     ///   - document: The document to play
     ///   - index: Starting word index (default 0)
     func loadDocument(_ document: Document, startAt index: Int = 0) {
-        stopTimer()
+        print("[Engine] loadDocument: totalWords=\(document.totalWords), requestedStart=\(index)")
+        stopPlayback()
         self.document = document
+
+        guard document.totalWords > 0 else {
+            print("[Engine] WARNING: Document has 0 words! Staying at index 0.")
+            self.currentWordIndex = 0
+            self.state = .stopped
+            self.lastChapterIndex = nil
+            onStateChange?(.stopped)
+            return
+        }
+
         self.currentWordIndex = max(0, min(index, document.totalWords - 1))
+        print("[Engine] Set currentWordIndex=\(self.currentWordIndex)")
         self.state = .stopped
         self.lastChapterIndex = nil
         onStateChange?(.stopped)
 
         if let word = currentWord {
             onWordChange?(word, currentWordIndex)
+            print("[Engine] Initial word emitted: '\(word.text)'")
+        } else {
+            print("[Engine] WARNING: currentWord is nil after setting index \(currentWordIndex)")
         }
 
         // Trigger initial chapter check
@@ -150,8 +168,15 @@ class PlaybackEngine {
 
     /// Starts or resumes playback
     func play() {
-        guard document != nil, totalWords > 0 else { return }
-        guard state != .playing else { return }
+        print("[Engine] play() called: state=\(state), hasDocument=\(document != nil), totalWords=\(totalWords), currentWordIndex=\(currentWordIndex)")
+        guard document != nil, totalWords > 0 else {
+            print("[Engine] play() aborted: no document or 0 words")
+            return
+        }
+        guard state != .playing else {
+            print("[Engine] play() aborted: already playing")
+            return
+        }
 
         // At end, reset to beginning
         if currentWordIndex >= totalWords {
@@ -160,13 +185,13 @@ class PlaybackEngine {
 
         state = .playing
         onStateChange?(.playing)
-        scheduleNextWord()
+        startPlaybackLoop()
     }
 
     /// Pauses playback
     func pause() {
         guard state == .playing else { return }
-        stopTimer()
+        stopPlayback()
         state = .paused
         onStateChange?(.paused)
     }
@@ -183,7 +208,7 @@ class PlaybackEngine {
 
     /// Stops playback and resets to beginning
     func stop() {
-        stopTimer()
+        stopPlayback()
         currentWordIndex = 0
         state = .stopped
         onStateChange?(.stopped)
@@ -337,15 +362,35 @@ class PlaybackEngine {
         checkChapterChange()
     }
 
-    // MARK: - Timer Management
+    // MARK: - Playback Management
 
-    private func scheduleNextWord() {
-        guard state == .playing, let doc = document else { return }
+    private func startPlaybackLoop() {
+        playbackTask?.cancel()
+        playbackTask = Task {
+            await playbackLoopIteration()
+        }
+    }
+
+    private func playbackLoopIteration() async {
+        // Check if we should continue
+        guard state == .playing, let doc = document else {
+            print("[Engine] Loop exit early: state=\(state), hasDocument=\(document != nil)")
+            return
+        }
         guard currentWordIndex < totalWords else {
             // Reached end
+            print("[Engine] Reached end: currentWordIndex=\(currentWordIndex), totalWords=\(totalWords)")
             state = .paused
             onStateChange?(.paused)
             onComplete?()
+            return
+        }
+
+        // Bounds check before array access
+        guard currentWordIndex >= 0, currentWordIndex < doc.words.count else {
+            print("[Engine] FATAL: Index out of bounds! currentWordIndex=\(currentWordIndex), words.count=\(doc.words.count)")
+            state = .paused
+            onStateChange?(.paused)
             return
         }
 
@@ -381,22 +426,24 @@ class PlaybackEngine {
             return
         }
 
-        // Schedule next word
-        timer = DispatchSource.makeTimerSource(queue: timerQueue)
-        timer?.schedule(deadline: .now() + .milliseconds(delayMs))
-        timer?.setEventHandler { [weak self] in
-            DispatchQueue.main.async {
-                guard let self = self, self.state == .playing else { return }
-                self.currentWordIndex += 1
-                self.scheduleNextWord()
-            }
+        // Wait for delay
+        do {
+            try await Task.sleep(nanoseconds: UInt64(delayMs) * 1_000_000)
+        } catch {
+            return // Task was cancelled
         }
-        timer?.resume()
+
+        // Move to next word and continue loop
+        guard state == .playing else { return }
+        currentWordIndex += 1
+
+        // Schedule next iteration
+        await playbackLoopIteration()
     }
 
-    private func stopTimer() {
-        timer?.cancel()
-        timer = nil
+    private func stopPlayback() {
+        playbackTask?.cancel()
+        playbackTask = nil
     }
 
     private var lastChapterIndex: Int? = nil
@@ -407,14 +454,15 @@ class PlaybackEngine {
         guard let chapterIndex = word.chapterIndex else { return }
 
         if chapterIndex != lastChapterIndex {
+            print("[Engine] Chapter change: \(lastChapterIndex ?? -1) -> \(chapterIndex), chaptersCount=\(chapters.count)")
             lastChapterIndex = chapterIndex
             if chapterIndex < chapters.count {
+                print("[Engine] Firing onChapterChange: '\(chapters[chapterIndex].title)'")
                 onChapterChange?(chapters[chapterIndex])
+            } else {
+                print("[Engine] WARNING: chapterIndex \(chapterIndex) out of bounds (chapters.count=\(chapters.count))")
             }
         }
     }
 
-    deinit {
-        stopTimer()
-    }
 }

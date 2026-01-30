@@ -1,5 +1,6 @@
 import Foundation
 import CryptoKit
+import Compression
 
 /// Result of loading an EPUB file
 struct EPUBLoadResult {
@@ -21,6 +22,9 @@ enum EPUBImportService {
     /// - Returns: EPUBLoadResult with content, metadata, and chapters
     /// - Throws: FileImportError if the file cannot be loaded
     static func loadEPUB(from url: URL) throws -> EPUBLoadResult {
+        print("[EPUB] Loading EPUB from: \(url.path)")
+        print("[EPUB] File exists: \(FileManager.default.fileExists(atPath: url.path))")
+
         // Start accessing security-scoped resource if available
         let accessing = url.startAccessingSecurityScopedResource()
         defer {
@@ -45,6 +49,7 @@ enum EPUBImportService {
 
         // Extract EPUB contents
         let epubContents = try extractEPUB(from: url)
+        print("[EPUB] Extracted \(epubContents.count) entries: \(epubContents.keys.sorted())")
 
         // Check for DRM
         if let encryptionXML = epubContents["META-INF/encryption.xml"] {
@@ -74,6 +79,9 @@ enum EPUBImportService {
         }
 
         let spine = OPFParser.parseSpine(opfXML)
+        print("[EPUB] OPF path: \(opfPath)")
+        print("[EPUB] Metadata: title=\(metadata.title), author=\(metadata.author ?? "nil")")
+        print("[EPUB] Spine has \(spine.count) documents")
 
         if spine.isEmpty {
             throw FileImportError.corruptFile
@@ -148,6 +156,8 @@ enum EPUBImportService {
             }
         }
 
+        print("[EPUB] Content extraction done: textLength=\(allText.count), chapters=\(chapters.count), wordCount=\(currentWordCount)")
+
         // Validate we got some content
         guard !allText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw FileImportError.emptyFile
@@ -174,81 +184,105 @@ enum EPUBImportService {
 
     /// Extract EPUB (ZIP) contents into a dictionary
     private static func extractEPUB(from url: URL) throws -> [String: Data] {
+        // EPUB files are ZIP archives - parse them directly
+        let fileData = try Data(contentsOf: url)
+        return try parseZIP(data: fileData)
+    }
+
+    /// Simple ZIP parser for EPUB files
+    /// EPUBs use the ZIP format with stored or deflate compression
+    private static func parseZIP(data: Data) throws -> [String: Data] {
         var contents: [String: Data] = [:]
+        var offset = 0
 
-        // Use Foundation's ZIP support via FileWrapper for reading
-        // Note: This is a simplified extraction - for production, consider using ZIPFoundation
-        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        // ZIP local file header signature: 0x04034b50
+        let localFileSignature: [UInt8] = [0x50, 0x4b, 0x03, 0x04]
 
-        do {
-            try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-            defer {
-                try? FileManager.default.removeItem(at: tempDir)
+        while offset + 30 < data.count {
+            // Check for local file header signature
+            let sig = [UInt8](data[offset..<offset+4])
+            guard sig == localFileSignature else {
+                break // No more local file headers
             }
 
-            // Use Process to unzip (available on iOS via Simulator, but not on device)
-            // For actual iOS deployment, we'd use a ZIP library
-            #if targetEnvironment(simulator) || os(macOS)
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
-            process.arguments = ["-q", "-o", url.path, "-d", tempDir.path]
-            process.standardOutput = FileHandle.nullDevice
-            process.standardError = FileHandle.nullDevice
-            try process.run()
-            process.waitUntilExit()
+            // Parse local file header
+            let compressionMethod = UInt16(data[offset + 8]) | (UInt16(data[offset + 9]) << 8)
+            let compressedSize = UInt32(data[offset + 18]) | (UInt32(data[offset + 19]) << 8) | (UInt32(data[offset + 20]) << 16) | (UInt32(data[offset + 21]) << 24)
+            let uncompressedSize = UInt32(data[offset + 22]) | (UInt32(data[offset + 23]) << 8) | (UInt32(data[offset + 24]) << 16) | (UInt32(data[offset + 25]) << 24)
+            let fileNameLength = UInt16(data[offset + 26]) | (UInt16(data[offset + 27]) << 8)
+            let extraFieldLength = UInt16(data[offset + 28]) | (UInt16(data[offset + 29]) << 8)
 
-            if process.terminationStatus != 0 {
+            let headerSize = 30
+            let fileNameStart = offset + headerSize
+            let fileNameEnd = fileNameStart + Int(fileNameLength)
+
+            guard fileNameEnd <= data.count else {
                 throw FileImportError.corruptFile
             }
 
-            // Read all extracted files
-            contents = try readDirectory(tempDir, basePath: "")
-            #else
-            // On actual iOS device, use built-in ZIP reading
-            contents = try extractEPUBUsingFoundation(from: url)
-            #endif
+            let fileNameData = data[fileNameStart..<fileNameEnd]
+            guard let fileName = String(data: fileNameData, encoding: .utf8) else {
+                offset = fileNameEnd + Int(extraFieldLength) + Int(compressedSize)
+                continue
+            }
 
-        } catch let error as FileImportError {
-            throw error
-        } catch {
+            let dataStart = fileNameEnd + Int(extraFieldLength)
+            let dataEnd = dataStart + Int(compressedSize)
+
+            guard dataEnd <= data.count else {
+                throw FileImportError.corruptFile
+            }
+
+            // Skip directories
+            if !fileName.hasSuffix("/") {
+                let compressedData = data[dataStart..<dataEnd]
+
+                if compressionMethod == 0 {
+                    // Stored (no compression)
+                    contents[fileName] = Data(compressedData)
+                } else if compressionMethod == 8 {
+                    // Deflate compression
+                    if let decompressed = decompressDeflate(Data(compressedData), uncompressedSize: Int(uncompressedSize)) {
+                        contents[fileName] = decompressed
+                    }
+                }
+                // Skip other compression methods
+            }
+
+            offset = dataEnd
+        }
+
+        if contents.isEmpty {
             throw FileImportError.corruptFile
         }
 
         return contents
     }
 
-    /// Read directory contents recursively
-    private static func readDirectory(_ directory: URL, basePath: String) throws -> [String: Data] {
-        var contents: [String: Data] = [:]
+    /// Decompress deflate-compressed data using Compression framework
+    private static func decompressDeflate(_ data: Data, uncompressedSize: Int) -> Data? {
+        // Use zlib decompression (raw deflate)
+        let bufferSize = max(uncompressedSize, 1024)
+        var decompressed = Data(count: bufferSize)
 
-        let fileManager = FileManager.default
-        let items = try fileManager.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.isDirectoryKey])
-
-        for item in items {
-            let resourceValues = try item.resourceValues(forKeys: [.isDirectoryKey])
-            let relativePath = basePath.isEmpty ? item.lastPathComponent : basePath + "/" + item.lastPathComponent
-
-            if resourceValues.isDirectory == true {
-                let subContents = try readDirectory(item, basePath: relativePath)
-                contents.merge(subContents) { $1 }
-            } else {
-                contents[relativePath] = try Data(contentsOf: item)
+        let result = decompressed.withUnsafeMutableBytes { destBuffer in
+            data.withUnsafeBytes { srcBuffer in
+                guard let destPtr = destBuffer.bindMemory(to: UInt8.self).baseAddress,
+                      let srcPtr = srcBuffer.bindMemory(to: UInt8.self).baseAddress else {
+                    return 0
+                }
+                return compression_decode_buffer(
+                    destPtr, bufferSize,
+                    srcPtr, data.count,
+                    nil,
+                    COMPRESSION_ZLIB
+                )
             }
         }
 
-        return contents
-    }
-
-    /// Extract EPUB using Foundation's Archive support (iOS 16+)
-    private static func extractEPUBUsingFoundation(from url: URL) throws -> [String: Data] {
-        // For iOS devices, we need to use the Archive framework or a third-party ZIP library
-        // This is a placeholder - in a real implementation, you would:
-        // 1. Use Apple's Compression framework with custom ZIP handling
-        // 2. Or use a library like ZIPFoundation
-
-        // For now, try to read as-is if it's already extracted
-        // or throw an error indicating we need native ZIP support
-        throw FileImportError.readError("Native EPUB extraction requires ZIPFoundation or similar library")
+        guard result > 0 else { return nil }
+        decompressed.count = result
+        return decompressed
     }
 
     /// Parse container.xml to find the OPF file path

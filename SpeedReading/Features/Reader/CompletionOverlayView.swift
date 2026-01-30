@@ -12,6 +12,8 @@ struct CompletionOverlayView: View {
     let isVisible: Bool
     let onDismiss: () -> Void
 
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+
     var body: some View {
         ZStack {
             // Full screen background
@@ -55,7 +57,7 @@ struct CompletionOverlayView: View {
                 .accessibilityLabel("Return to Library")
                 .accessibilityHint("Tap to go back to your book library")
             }
-            .padding(.top, 100)
+            .padding(.top, LayoutHelper.completionOverlayTopPadding(isCompactHeight: verticalSizeClass == .compact))
         }
         .opacity(isVisible ? 1 : 0)
         .animation(.easeInOut(duration: 0.3), value: isVisible)
