@@ -136,6 +136,14 @@ class ReaderViewModel {
     /// Task reference for book loading (enables cancellation)
     private var loadTask: Task<Void, Never>?
 
+    // MARK: - Navigation Overlay State
+
+    /// Whether the navigation overlay is currently visible
+    private(set) var isNavigationOverlayVisible: Bool = false
+
+    /// Timer for auto-hiding navigation overlay after 2 seconds
+    private var navigationOverlayTimer: Timer?
+
     // MARK: - Callbacks
 
     /// Called on sentence boundary for haptic feedback
@@ -359,21 +367,25 @@ class ReaderViewModel {
     /// Jump to next sentence
     func nextSentence() {
         playbackEngine.nextSentence()
+        resetNavigationOverlayTimerIfVisible()
     }
 
     /// Jump to previous sentence
     func previousSentence() {
         playbackEngine.previousSentence()
+        resetNavigationOverlayTimerIfVisible()
     }
 
     /// Jump to next paragraph
     func nextParagraph() {
         playbackEngine.nextParagraph()
+        resetNavigationOverlayTimerIfVisible()
     }
 
     /// Jump to previous paragraph
     func previousParagraph() {
         playbackEngine.previousParagraph()
+        resetNavigationOverlayTimerIfVisible()
     }
 
     // MARK: - Scrubbing
@@ -411,6 +423,48 @@ class ReaderViewModel {
 
         isScrubbing = false
         // Stay paused per spec
+    }
+
+    // MARK: - Navigation Overlay
+
+    /// Shows the navigation overlay and starts the auto-hide timer
+    func showNavigationOverlay() {
+        isNavigationOverlayVisible = true
+        resetNavigationOverlayTimer()
+    }
+
+    /// Hides the navigation overlay and invalidates the timer
+    func hideNavigationOverlay() {
+        isNavigationOverlayVisible = false
+        navigationOverlayTimer?.invalidate()
+        navigationOverlayTimer = nil
+    }
+
+    /// Toggles the navigation overlay visibility
+    func toggleNavigationOverlay() {
+        if isNavigationOverlayVisible {
+            hideNavigationOverlay()
+        } else {
+            showNavigationOverlay()
+        }
+    }
+
+    /// Resets the navigation overlay timer (called when overlay is shown or navigation occurs)
+    private func resetNavigationOverlayTimer() {
+        navigationOverlayTimer?.invalidate()
+        navigationOverlayTimer = Timer.scheduledTimer(
+            withTimeInterval: Theme.Animation.navigationOverlayDuration,
+            repeats: false
+        ) { [weak self] _ in
+            self?.hideNavigationOverlay()
+        }
+    }
+
+    /// Resets the timer only if the overlay is currently visible
+    private func resetNavigationOverlayTimerIfVisible() {
+        if isNavigationOverlayVisible {
+            resetNavigationOverlayTimer()
+        }
     }
 
     // MARK: - Progress Saving
@@ -495,5 +549,7 @@ class ReaderViewModel {
         saveProgress()
         chapterOverlayTimer?.invalidate()
         chapterOverlayTimer = nil
+        navigationOverlayTimer?.invalidate()
+        navigationOverlayTimer = nil
     }
 }

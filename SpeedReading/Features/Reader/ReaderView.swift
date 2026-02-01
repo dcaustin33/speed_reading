@@ -117,36 +117,75 @@ struct ReaderView: View {
     // MARK: - Reader Content
 
     private var readerContent: some View {
-        VStack(spacing: 0) {
-            // Main content area - tap to toggle play/pause
-            tapArea
+        ZStack {
+            VStack(spacing: 0) {
+                // Main content area - tap to toggle play/pause
+                tapArea
 
-            // Menu button area
-            menuButtonArea
+                // Menu button area
+                menuButtonArea
 
-            // Bottom controls area
-            bottomControls
+                // Bottom controls area
+                bottomControls
+            }
+
+            // Navigation overlay with prev/next sentence and paragraph buttons
+            NavigationOverlayView(
+                isVisible: viewModel.isNavigationOverlayVisible,
+                onPreviousSentence: {
+                    viewModel.previousSentence()
+                    hapticGenerator.impactOccurred()
+                },
+                onNextSentence: {
+                    viewModel.nextSentence()
+                    hapticGenerator.impactOccurred()
+                },
+                onPreviousParagraph: {
+                    viewModel.previousParagraph()
+                    hapticGenerator.impactOccurred()
+                },
+                onNextParagraph: {
+                    viewModel.nextParagraph()
+                    hapticGenerator.impactOccurred()
+                }
+            )
         }
     }
 
     // MARK: - Tap Area (ORP Display)
 
     private var tapArea: some View {
-        Button {
-            viewModel.toggle()
-        } label: {
-            GeometryReader { geometry in
-                ORPDisplayView(
-                    word: viewModel.currentWord,
-                    orpIndex: viewModel.currentOrpIndex,
-                    fontSize: CGFloat(viewModel.fontSize)
-                )
-            }
-            .contentShape(Rectangle())
+        GeometryReader { geometry in
+            ORPDisplayView(
+                word: viewModel.currentWord,
+                orpIndex: viewModel.currentOrpIndex,
+                fontSize: CGFloat(viewModel.fontSize)
+            )
         }
-        .buttonStyle(.plain)
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: Theme.Navigation.minimumSwipeDistance, coordinateSpace: .local)
+                .onEnded { value in
+                    let horizontal = value.translation.width
+                    let vertical = value.translation.height
+                    // Only trigger if swipe is primarily horizontal
+                    if abs(horizontal) > abs(vertical) {
+                        if horizontal > 0 {
+                            viewModel.previousSentence()
+                        } else {
+                            viewModel.nextSentence()
+                        }
+                        hapticGenerator.impactOccurred()
+                    }
+                }
+        )
+        .simultaneousGesture(
+            TapGesture().onEnded {
+                viewModel.toggle()
+            }
+        )
         .accessibilityLabel(viewModel.isPlaying ? "Pause reading" : "Resume reading")
-        .accessibilityHint("Tap to toggle playback")
+        .accessibilityHint("Tap to toggle playback. Swipe left or right to navigate sentences.")
     }
 
     // MARK: - Menu Button
@@ -154,6 +193,20 @@ struct ReaderView: View {
     private var menuButtonArea: some View {
         HStack {
             Spacer()
+
+            // Navigation overlay toggle button
+            Button {
+                viewModel.toggleNavigationOverlay()
+            } label: {
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.title2)
+                    .foregroundStyle(viewModel.isNavigationOverlayVisible ? Theme.Colors.accent : Theme.Colors.primaryText)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("Toggle sentence navigation")
+            .accessibilityHint(viewModel.isNavigationOverlayVisible ? "Hide navigation buttons" : "Show navigation buttons")
+
+            // Menu button
             Button {
                 viewModel.pause()
                 showMenu = true

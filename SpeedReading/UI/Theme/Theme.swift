@@ -51,6 +51,23 @@ enum Theme {
     enum Animation {
         /// Chapter overlay display duration
         static let chapterOverlayDuration: TimeInterval = 2.0
+
+        /// Navigation overlay auto-hide duration
+        static let navigationOverlayDuration: TimeInterval = 2.0
+
+        /// Navigation overlay fade animation duration
+        static let navigationOverlayFadeDuration: Double = 0.3
+    }
+
+    enum Navigation {
+        /// Navigation button size
+        static let buttonSize: CGFloat = 56
+
+        /// Navigation button edge inset
+        static let edgeInset: CGFloat = 20
+
+        /// Minimum swipe distance to trigger sentence navigation
+        static let minimumSwipeDistance: CGFloat = 50
     }
 }
 
