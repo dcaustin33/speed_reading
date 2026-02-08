@@ -148,7 +148,7 @@ SpeedReading/
 │   │   ├── ReaderViewModel.swift    # Coordinates playback + persistence
 │   │   ├── ORPDisplayView.swift     # Centered word with ORP highlight
 │   │   ├── ProgressBarView.swift    # Scrubbing-enabled progress
-│   │   ├── StatsBarView.swift       # WPM, time remaining, %
+│   │   ├── StatsBarView.swift       # WPM, time remaining, %, chapter time
 │   │   ├── ChapterOverlayView.swift # Chapter transition display
 │   │   ├── CompletionOverlayView.swift # Book finished screen
 │   │   └── NavigationOverlayView.swift # Sentence/paragraph buttons
@@ -206,6 +206,11 @@ private func playbackLoopIteration() async {
 - `onComplete: () -> Void` — Shows completion screen
 - `onStateChange: (PlaybackState) -> Void` — Triggers progress save
 
+**Chapter Time Remaining** (EPUB only):
+- `chapterRemainingTime: TimeInterval?` — Remaining time in current chapter, nil for non-EPUB
+- `chapterRemainingTimeFormatted: String?` — Formatted as M:SS or H:MM:SS
+- Uses `Word.chapterIndex` to find chapter boundaries, counts remaining words and paragraph pauses
+
 **Important Implementation Detail:**
 Cannot use `didSet` on `@Observable` properties (causes stack overflow on re-entry). Uses private backing properties with computed getters/setters:
 ```swift
@@ -222,7 +227,8 @@ Coordinates between PlaybackEngine and UI. Key responsibilities:
 
 1. **Book Loading** (`performLoadBook`):
    - Loads library, validates file hash (resets position if changed)
-   - Tokenizes content with chapter info
+   - Loads EPUB chapters from `Chapters/{bookId}.json` via `LibraryDataService.loadChapters(for:)`
+   - Tokenizes content with chapter info (assigns `Word.chapterIndex`)
    - Handles jump priorities: search result > TOC selection > saved position
 
 2. **Progress Persistence**:
@@ -283,6 +289,7 @@ container.xml → OPF path → metadata + spine → content documents → plain 
 - `library.json` — Book metadata + global settings
 - `Books/{UUID}.{ext}` — Imported book files
 - `Covers/{UUID}.jpg` — EPUB cover images
+- `Chapters/{UUID}.json` — EPUB chapter data (title + startWordIndex)
 
 **Library JSON Structure:**
 ```json
@@ -451,6 +458,7 @@ Key test files:
 - `NavigationOverlayTests.swift` — Navigation UI
 - `ReaderViewModelNavigationTests.swift` — Navigation logic
 - `SwipeGestureTests.swift` — Gesture handling
+- `ChapterTimeRemainingTests.swift` — Chapter time remaining calculation
 
 ### Python Tests (`tests/`)
 ```bash
@@ -490,4 +498,4 @@ Check `char_to_word` mapping in tokenizer — character positions from EPUB TOC 
 
 ---
 
-*Last updated: b402db574468558853f355b44dd208f47f3521fc*
+*Last updated: f1d4ecf6a4299fd407960d8234fd6ee2120028d3*
