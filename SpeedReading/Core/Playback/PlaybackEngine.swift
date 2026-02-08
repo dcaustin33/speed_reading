@@ -111,7 +111,49 @@ class PlaybackEngine {
 
     /// Formatted remaining time string (MM:SS or H:MM:SS)
     var remainingTimeFormatted: String {
-        let seconds = Int(remainingTime)
+        Self.formatTime(remainingTime)
+    }
+
+    /// Remaining time in the current chapter, or nil if no chapters
+    var chapterRemainingTime: TimeInterval? {
+        guard let doc = document, let chapters = doc.chapters, !chapters.isEmpty else { return nil }
+        guard currentWordIndex < doc.totalWords else { return nil }
+
+        let word = doc.words[currentWordIndex]
+        guard let chapterIdx = word.chapterIndex else { return nil }
+
+        // Chapter end: next chapter's startWordIndex, or totalWords for last chapter
+        let chapterEnd: Int
+        if chapterIdx + 1 < chapters.count {
+            chapterEnd = chapters[chapterIdx + 1].startWordIndex
+        } else {
+            chapterEnd = doc.totalWords
+        }
+
+        let remainingWords = chapterEnd - currentWordIndex
+        guard remainingWords > 0 else { return 0 }
+
+        let wordTime = Double(remainingWords) * (Double(wordDelayMs) / 1000.0)
+
+        var paragraphCount = 0
+        for i in currentWordIndex..<chapterEnd {
+            if doc.words[i].paragraphEnd {
+                paragraphCount += 1
+            }
+        }
+        let paragraphTime = Double(paragraphCount) * paragraphPause
+
+        return wordTime + paragraphTime
+    }
+
+    /// Formatted chapter remaining time, or nil if no chapters
+    var chapterRemainingTimeFormatted: String? {
+        guard let time = chapterRemainingTime else { return nil }
+        return Self.formatTime(time)
+    }
+
+    private static func formatTime(_ time: TimeInterval) -> String {
+        let seconds = Int(time)
         let hours = seconds / 3600
         let minutes = (seconds % 3600) / 60
         let secs = seconds % 60

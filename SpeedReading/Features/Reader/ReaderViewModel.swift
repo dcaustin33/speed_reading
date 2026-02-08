@@ -58,6 +58,11 @@ class ReaderViewModel {
         playbackEngine.remainingTimeFormatted
     }
 
+    /// Formatted chapter time remaining, or nil if no chapters
+    var chapterRemainingTimeFormatted: String? {
+        playbackEngine.chapterRemainingTimeFormatted
+    }
+
     // MARK: - Settings (synced with PlaybackEngine)
 
     var wpm: Int {
@@ -322,12 +327,11 @@ class ReaderViewModel {
         return 0
     }
 
-    /// Loads chapters for EPUB files (placeholder - chapters already in Document)
+    /// Loads chapters for EPUB files from persisted chapter data
     private func loadChapters(for book: Book, content: String) async -> [Chapter]? {
-        // For now, chapters are handled during initial EPUB import
-        // and stored in the tokenized document. This is a placeholder
-        // for any additional chapter loading logic if needed.
-        return nil
+        guard book.fileType == .epub else { return nil }
+        let chapters = libraryDataService.loadChapters(for: book.id)
+        return chapters.isEmpty ? nil : chapters
     }
 
     // MARK: - Playback Control

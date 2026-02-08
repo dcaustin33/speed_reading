@@ -12,28 +12,42 @@ struct StatsBarView: View {
     /// Progress percentage (0-100)
     let progressPercentage: Int
 
+    /// Formatted chapter time remaining, nil for non-EPUB books
+    var chapterTimeRemaining: String? = nil
+
     var body: some View {
-        HStack {
-            // WPM display
-            Text("\(wpm) WPM")
-                .foregroundStyle(Theme.Colors.secondaryText)
-                .accessibilityLabel("\(wpm) words per minute")
+        VStack(spacing: 2) {
+            HStack {
+                // WPM display
+                Text("\(wpm) WPM")
+                    .foregroundStyle(Theme.Colors.secondaryText)
+                    .accessibilityLabel("\(wpm) words per minute")
 
-            // Separator
-            Text("•")
-                .foregroundStyle(Theme.Colors.secondaryText)
+                // Separator
+                Text("•")
+                    .foregroundStyle(Theme.Colors.secondaryText)
 
-            // Time remaining
-            Text("\(timeRemaining) remaining")
-                .foregroundStyle(Theme.Colors.secondaryText)
-                .accessibilityLabel("\(timeRemaining) remaining")
+                // Time remaining
+                Text("\(timeRemaining) remaining")
+                    .foregroundStyle(Theme.Colors.secondaryText)
+                    .accessibilityLabel("\(timeRemaining) remaining")
 
-            Spacer()
+                Spacer()
 
-            // Progress percentage
-            Text("\(progressPercentage)%")
-                .foregroundStyle(Theme.Colors.secondaryText)
-                .accessibilityLabel("\(progressPercentage) percent complete")
+                // Progress percentage
+                Text("\(progressPercentage)%")
+                    .foregroundStyle(Theme.Colors.secondaryText)
+                    .accessibilityLabel("\(progressPercentage) percent complete")
+            }
+
+            if let chapterTime = chapterTimeRemaining {
+                HStack {
+                    Text("Chapter: \(chapterTime) remaining")
+                        .foregroundStyle(Theme.Colors.secondaryText)
+                        .accessibilityLabel("Chapter \(chapterTime) remaining")
+                    Spacer()
+                }
+            }
         }
         .font(.caption)
     }

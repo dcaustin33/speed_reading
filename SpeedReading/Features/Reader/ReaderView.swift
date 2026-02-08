@@ -245,7 +245,8 @@ struct ReaderView: View {
             StatsBarView(
                 wpm: viewModel.wpm,
                 timeRemaining: viewModel.remainingTimeFormatted,
-                progressPercentage: viewModel.progressPercentage
+                progressPercentage: viewModel.progressPercentage,
+                chapterTimeRemaining: viewModel.chapterRemainingTimeFormatted
             )
         }
         .padding(.horizontal)
