@@ -149,11 +149,6 @@ class ReaderViewModel {
     /// Timer for auto-hiding navigation overlay after 2 seconds
     private var navigationOverlayTimer: Timer?
 
-    // MARK: - Callbacks
-
-    /// Called on sentence boundary for haptic feedback
-    var onSentenceBoundary: (() -> Void)?
-
     // MARK: - Initialization
 
     init(bookId: UUID, libraryDataService: LibraryDataService = LibraryDataService()) {
@@ -168,10 +163,6 @@ class ReaderViewModel {
         playbackEngine.onWordChange = { [weak self] word, index in
             self?.currentWord = word.text
             self?.currentOrpIndex = word.orpIndex
-        }
-
-        playbackEngine.onSentenceChange = { [weak self] in
-            self?.onSentenceBoundary?()
         }
 
         playbackEngine.onParagraphChange = { [weak self] in

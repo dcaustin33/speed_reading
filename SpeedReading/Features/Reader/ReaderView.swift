@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 /// Main reading screen with ORP display, playback controls, and progress tracking.
 struct ReaderView: View {
@@ -9,9 +8,6 @@ struct ReaderView: View {
 
     @State private var viewModel: ReaderViewModel
     @State private var showMenu = false
-
-    // Haptic feedback generator for sentence boundaries
-    private let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
 
     init(bookId: UUID) {
         self.bookId = bookId
@@ -62,8 +58,6 @@ struct ReaderView: View {
         }
         .task {
             viewModel.loadBook()
-            hapticGenerator.prepare()
-            setupHapticCallback()
         }
         .onDisappear {
             viewModel.onDisappear()
@@ -134,19 +128,15 @@ struct ReaderView: View {
                 isVisible: viewModel.isNavigationOverlayVisible,
                 onPreviousSentence: {
                     viewModel.previousSentence()
-                    hapticGenerator.impactOccurred()
                 },
                 onNextSentence: {
                     viewModel.nextSentence()
-                    hapticGenerator.impactOccurred()
                 },
                 onPreviousParagraph: {
                     viewModel.previousParagraph()
-                    hapticGenerator.impactOccurred()
                 },
                 onNextParagraph: {
                     viewModel.nextParagraph()
-                    hapticGenerator.impactOccurred()
                 }
             )
         }
@@ -175,7 +165,6 @@ struct ReaderView: View {
                         } else {
                             viewModel.nextSentence()
                         }
-                        hapticGenerator.impactOccurred()
                     }
                 }
         )
@@ -299,16 +288,6 @@ struct ReaderView: View {
         }
     }
 
-    // MARK: - Haptic Feedback Setup
-
-    /// Sets up haptic feedback callback for sentence boundaries
-    private func setupHapticCallback() {
-        viewModel.onSentenceBoundary = { [hapticGenerator] in
-            // Respect system haptics setting via UIFeedbackGenerator
-            // UIImpactFeedbackGenerator automatically respects system settings
-            hapticGenerator.impactOccurred()
-        }
-    }
 }
 
 #Preview {
