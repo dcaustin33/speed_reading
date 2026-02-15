@@ -60,6 +60,7 @@ struct ProgressBarView: View {
         .accessibilityLabel("Reading progress")
         .accessibilityValue("\(Int(progress * 100)) percent complete")
         .accessibilityAdjustableAction { direction in
+            onScrubStart()
             switch direction {
             case .increment:
                 onScrubChange(min(1, progress + 0.05))
@@ -68,6 +69,7 @@ struct ProgressBarView: View {
             @unknown default:
                 break
             }
+            onScrubEnd()
         }
     }
 }
