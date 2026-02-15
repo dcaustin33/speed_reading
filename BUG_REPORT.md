@@ -68,7 +68,7 @@
 - **Description:** The abbreviation list is missing common abbreviations that cause false sentence-end detection: "e.g.", "i.e.", "a.m.", "p.m.", "u.s.", "u.k.", "prof.", "gen.", "dept.", etc.
 - **Fix:** Add missing abbreviations to the set.
 
-### S4. Chapter word-index drift — simple word count vs. tokenizer mismatch
+### - [x] S4. Chapter word-index drift — simple word count vs. tokenizer mismatch
 - **File:** `Services/EPUB/EPUBImportService.swift:152-155`
 - **Description:** Chapter `startWordIndex` values use `components(separatedBy: .whitespacesAndNewlines)` (simple split), but reading uses `TokenizerService` which splits hyphenated words. Chapter boundaries progressively drift as hyphenated words accumulate.
 - **Fix:** Use the same tokenization logic when computing chapter `startWordIndex`.

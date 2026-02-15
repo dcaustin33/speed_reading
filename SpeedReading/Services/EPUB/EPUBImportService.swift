@@ -148,11 +148,8 @@ enum EPUBImportService {
                 }
                 allText += plainText
 
-                // Count words for next chapter's start index
-                let wordCount = plainText.components(separatedBy: .whitespacesAndNewlines)
-                    .filter { !$0.isEmpty }
-                    .count
-                currentWordCount += wordCount
+                // Count words using same logic as TokenizerService (including hyphen splitting)
+                currentWordCount += TokenizerService.countWords(in: plainText)
             }
         }
 

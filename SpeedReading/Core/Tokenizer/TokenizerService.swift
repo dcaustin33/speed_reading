@@ -83,6 +83,28 @@ enum TokenizerService {
         return Document(words: allWords, chapters: chapters)
     }
 
+    /// Counts words using the same logic as tokenize() (including hyphen splitting).
+    static func countWords(in text: String) -> Int {
+        var normalized = text.replacingOccurrences(of: "\r\n", with: "\n")
+        normalized = normalized.replacingOccurrences(of: "\r", with: "\n")
+
+        let paragraphs = normalized.components(separatedBy: "\n\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+
+        var count = 0
+        for paragraph in paragraphs {
+            let rawTokens = paragraph
+                .components(separatedBy: .whitespacesAndNewlines)
+                .filter { !$0.isEmpty }
+
+            for token in rawTokens {
+                count += splitHyphenatedWord(token).count
+            }
+        }
+        return count
+    }
+
     /// Finds the chapter index for a given word position.
     private static func findChapterIndex(wordIndex: Int, chapters: [Chapter]?) -> Int? {
         guard let chapters = chapters, !chapters.isEmpty else { return nil }
