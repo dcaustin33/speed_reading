@@ -189,67 +189,105 @@ enum EPUBImportService {
         return try parseZIP(data: fileData)
     }
 
+    /// Entry from the ZIP Central Directory with reliable file sizes
+    private struct ZIPCentralDirectoryEntry {
+        let compressionMethod: UInt16
+        let compressedSize: UInt32
+        let uncompressedSize: UInt32
+        let localHeaderOffset: UInt32
+    }
+
     /// Simple ZIP parser for EPUB files
     /// EPUBs use the ZIP format with stored or deflate compression
     private static func parseZIP(data: Data) throws -> [String: Data] {
         var contents: [String: Data] = [:]
-        var offset = 0
 
-        // ZIP local file header signature: 0x04034b50
-        let localFileSignature: [UInt8] = [0x50, 0x4b, 0x03, 0x04]
+        // Parse Central Directory first for reliable sizes.
+        // Local headers with data descriptor flag (bit 3) have sizes set to 0,
+        // but the Central Directory always has correct values.
+        let centralDirectory = parseCentralDirectory(data: data)
 
-        while offset + 30 < data.count {
-            // Check for local file header signature
-            let sig = [UInt8](data[offset..<offset+4])
-            guard sig == localFileSignature else {
-                break // No more local file headers
-            }
+        if !centralDirectory.isEmpty {
+            let localFileSignature: [UInt8] = [0x50, 0x4b, 0x03, 0x04]
 
-            // Parse local file header
-            let compressionMethod = UInt16(data[offset + 8]) | (UInt16(data[offset + 9]) << 8)
-            let compressedSize = UInt32(data[offset + 18]) | (UInt32(data[offset + 19]) << 8) | (UInt32(data[offset + 20]) << 16) | (UInt32(data[offset + 21]) << 24)
-            let uncompressedSize = UInt32(data[offset + 22]) | (UInt32(data[offset + 23]) << 8) | (UInt32(data[offset + 24]) << 16) | (UInt32(data[offset + 25]) << 24)
-            let fileNameLength = UInt16(data[offset + 26]) | (UInt16(data[offset + 27]) << 8)
-            let extraFieldLength = UInt16(data[offset + 28]) | (UInt16(data[offset + 29]) << 8)
+            for (fileName, entry) in centralDirectory {
+                guard !fileName.hasSuffix("/") else { continue }
 
-            let headerSize = 30
-            let fileNameStart = offset + headerSize
-            let fileNameEnd = fileNameStart + Int(fileNameLength)
+                let localOffset = Int(entry.localHeaderOffset)
+                guard localOffset + 30 <= data.count else { continue }
 
-            guard fileNameEnd <= data.count else {
-                throw FileImportError.corruptFile
-            }
+                // Verify local header signature
+                let sig = [UInt8](data[localOffset..<localOffset + 4])
+                guard sig == localFileSignature else { continue }
 
-            let fileNameData = data[fileNameStart..<fileNameEnd]
-            guard let fileName = String(data: fileNameData, encoding: .utf8) else {
-                offset = fileNameEnd + Int(extraFieldLength) + Int(compressedSize)
-                continue
-            }
+                // Read variable-length fields from local header to find data start
+                let fileNameLength = Int(UInt16(data[localOffset + 26]) | (UInt16(data[localOffset + 27]) << 8))
+                let extraFieldLength = Int(UInt16(data[localOffset + 28]) | (UInt16(data[localOffset + 29]) << 8))
 
-            let dataStart = fileNameEnd + Int(extraFieldLength)
-            let dataEnd = dataStart + Int(compressedSize)
+                let dataStart = localOffset + 30 + fileNameLength + extraFieldLength
+                let dataEnd = dataStart + Int(entry.compressedSize)
 
-            guard dataEnd <= data.count else {
-                throw FileImportError.corruptFile
-            }
+                guard dataEnd <= data.count else { continue }
 
-            // Skip directories
-            if !fileName.hasSuffix("/") {
                 let compressedData = data[dataStart..<dataEnd]
 
-                if compressionMethod == 0 {
-                    // Stored (no compression)
+                if entry.compressionMethod == 0 {
                     contents[fileName] = Data(compressedData)
-                } else if compressionMethod == 8 {
-                    // Deflate compression
-                    if let decompressed = decompressDeflate(Data(compressedData), uncompressedSize: Int(uncompressedSize)) {
+                } else if entry.compressionMethod == 8 {
+                    if let decompressed = decompressDeflate(Data(compressedData), uncompressedSize: Int(entry.uncompressedSize)) {
                         contents[fileName] = decompressed
                     }
                 }
-                // Skip other compression methods
             }
+        } else {
+            // Fallback: sequential local header parsing for ZIPs without a Central Directory
+            var offset = 0
+            let localFileSignature: [UInt8] = [0x50, 0x4b, 0x03, 0x04]
 
-            offset = dataEnd
+            while offset + 30 < data.count {
+                let sig = [UInt8](data[offset..<offset + 4])
+                guard sig == localFileSignature else { break }
+
+                let compressionMethod = UInt16(data[offset + 8]) | (UInt16(data[offset + 9]) << 8)
+                let compressedSize = UInt32(data[offset + 18]) | (UInt32(data[offset + 19]) << 8) | (UInt32(data[offset + 20]) << 16) | (UInt32(data[offset + 21]) << 24)
+                let uncompressedSize = UInt32(data[offset + 22]) | (UInt32(data[offset + 23]) << 8) | (UInt32(data[offset + 24]) << 16) | (UInt32(data[offset + 25]) << 24)
+                let fileNameLength = UInt16(data[offset + 26]) | (UInt16(data[offset + 27]) << 8)
+                let extraFieldLength = UInt16(data[offset + 28]) | (UInt16(data[offset + 29]) << 8)
+
+                let fileNameStart = offset + 30
+                let fileNameEnd = fileNameStart + Int(fileNameLength)
+
+                guard fileNameEnd <= data.count else {
+                    throw FileImportError.corruptFile
+                }
+
+                let fileNameData = data[fileNameStart..<fileNameEnd]
+                guard let fileName = String(data: fileNameData, encoding: .utf8) else {
+                    offset = fileNameEnd + Int(extraFieldLength) + Int(compressedSize)
+                    continue
+                }
+
+                let dataStart = fileNameEnd + Int(extraFieldLength)
+                let dataEnd = dataStart + Int(compressedSize)
+
+                guard dataEnd <= data.count else {
+                    throw FileImportError.corruptFile
+                }
+
+                if !fileName.hasSuffix("/") {
+                    let compressedData = data[dataStart..<dataEnd]
+
+                    if compressionMethod == 0 {
+                        contents[fileName] = Data(compressedData)
+                    } else if compressionMethod == 8 {
+                        if let decompressed = decompressDeflate(Data(compressedData), uncompressedSize: Int(uncompressedSize)) {
+                            contents[fileName] = decompressed
+                        }
+                    }
+                }
+
+                offset = dataEnd
+            }
         }
 
         if contents.isEmpty {
@@ -257,6 +295,68 @@ enum EPUBImportService {
         }
 
         return contents
+    }
+
+    /// Parse the ZIP Central Directory to get reliable file sizes
+    private static func parseCentralDirectory(data: Data) -> [String: ZIPCentralDirectoryEntry] {
+        var entries: [String: ZIPCentralDirectoryEntry] = [:]
+
+        // Find End of Central Directory record (search backwards)
+        // EOCD signature: 0x06054b50 (little-endian: 50 4b 05 06)
+        let eocdSignature: [UInt8] = [0x50, 0x4b, 0x05, 0x06]
+        let searchStart = max(0, data.count - 65557) // EOCD + max comment size
+        var eocdOffset = -1
+
+        for i in stride(from: data.count - 22, through: searchStart, by: -1) {
+            guard i + 4 <= data.count else { continue }
+            if [UInt8](data[i..<i + 4]) == eocdSignature {
+                eocdOffset = i
+                break
+            }
+        }
+
+        guard eocdOffset >= 0, eocdOffset + 22 <= data.count else { return entries }
+
+        let cdOffset = Int(
+            UInt32(data[eocdOffset + 16]) |
+            (UInt32(data[eocdOffset + 17]) << 8) |
+            (UInt32(data[eocdOffset + 18]) << 16) |
+            (UInt32(data[eocdOffset + 19]) << 24)
+        )
+
+        // Parse Central Directory entries (signature: 0x02014b50)
+        let cdSignature: [UInt8] = [0x50, 0x4b, 0x01, 0x02]
+        var offset = cdOffset
+
+        while offset + 46 <= data.count {
+            let sig = [UInt8](data[offset..<offset + 4])
+            guard sig == cdSignature else { break }
+
+            let compressionMethod = UInt16(data[offset + 10]) | (UInt16(data[offset + 11]) << 8)
+            let compressedSize = UInt32(data[offset + 20]) | (UInt32(data[offset + 21]) << 8) | (UInt32(data[offset + 22]) << 16) | (UInt32(data[offset + 23]) << 24)
+            let uncompressedSize = UInt32(data[offset + 24]) | (UInt32(data[offset + 25]) << 8) | (UInt32(data[offset + 26]) << 16) | (UInt32(data[offset + 27]) << 24)
+            let fileNameLength = Int(UInt16(data[offset + 28]) | (UInt16(data[offset + 29]) << 8))
+            let extraFieldLength = Int(UInt16(data[offset + 30]) | (UInt16(data[offset + 31]) << 8))
+            let fileCommentLength = Int(UInt16(data[offset + 32]) | (UInt16(data[offset + 33]) << 8))
+            let localHeaderOffset = UInt32(data[offset + 42]) | (UInt32(data[offset + 43]) << 8) | (UInt32(data[offset + 44]) << 16) | (UInt32(data[offset + 45]) << 24)
+
+            let fileNameStart = offset + 46
+            let fileNameEnd = fileNameStart + fileNameLength
+
+            if fileNameEnd <= data.count,
+               let fileName = String(data: data[fileNameStart..<fileNameEnd], encoding: .utf8) {
+                entries[fileName] = ZIPCentralDirectoryEntry(
+                    compressionMethod: compressionMethod,
+                    compressedSize: compressedSize,
+                    uncompressedSize: uncompressedSize,
+                    localHeaderOffset: localHeaderOffset
+                )
+            }
+
+            offset = fileNameEnd + extraFieldLength + fileCommentLength
+        }
+
+        return entries
     }
 
     /// Decompress deflate-compressed data using Compression framework

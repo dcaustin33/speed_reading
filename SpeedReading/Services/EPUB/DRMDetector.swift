@@ -28,11 +28,6 @@ enum DRMDetector {
             return true
         }
 
-        // W3C XML Encryption (AES, 3DES, etc.)
-        if xml.contains("http://www.w3.org/2001/04/xmlenc") {
-            return true
-        }
-
         // Other known DRM schemes
         if xml.contains("http://www.marlin-drm.com") ||
            xml.contains("http://www.fairplay.com") {
