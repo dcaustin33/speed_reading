@@ -88,12 +88,12 @@
 - **Description:** The regex `<navPoint[^>]*>([\s\S]*?)</navPoint>` uses non-greedy matching to the first `</navPoint>`. Nested navPoints (common with parts containing chapters) produce duplicate/incorrect TOC entries.
 - **Fix:** Use an iterative/stack-based parser instead of regex for nested structures.
 
-### S8. NAV parser misses anchor titles with inline HTML
+### - [x] S8. NAV parser misses anchor titles with inline HTML
 - **File:** `Services/EPUB/NAVParser.swift:162`
 - **Description:** The pattern `([^<]+)` fails when the anchor contains inner elements like `<span>Chapter 1</span>`. The title is not captured.
 - **Fix:** Change `([^<]+)` to `([\s\S]*?)` and strip inner HTML tags from the captured title.
 
-### U3. SettingsViewModel uses `didSet` on `@Observable` properties
+### - [x] U3. SettingsViewModel uses `didSet` on `@Observable` properties
 - **File:** `Features/Settings/SettingsViewModel.swift:17-25`
 - **Description:** `fontSize` and `wordSkip` use `didSet` with `@Observable`, which risks stack overflow on re-entry per the project's established pattern. Fragile even if currently safe.
 - **Fix:** Use private backing + computed property pattern like PlaybackEngine.

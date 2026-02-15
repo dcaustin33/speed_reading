@@ -159,7 +159,8 @@ enum NAVParser {
 
     private static func parseOLEntries(_ content: String, entries: inout [TOCEntry], level: Int) {
         // Find <a href="...">title</a> patterns within the content
-        let anchorPattern = "<a[^>]+href=\"([^\"]+)\"[^>]*>([^<]+)</a>"
+        // Use [\s\S]*? to handle anchors with inner HTML like <span>Chapter 1</span>
+        let anchorPattern = "<a[^>]+href=\"([^\"]+)\"[^>]*>([\\s\\S]*?)</a>"
 
         guard let regex = try? NSRegularExpression(pattern: anchorPattern, options: []) else {
             return
@@ -174,7 +175,7 @@ enum NAVParser {
             }
 
             var href = String(content[hrefRange])
-            let title = String(content[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let title = stripInnerHTML(String(content[titleRange])).trimmingCharacters(in: .whitespacesAndNewlines)
 
             // Remove fragment identifier
             if let hashIndex = href.firstIndex(of: "#") {
@@ -187,9 +188,15 @@ enum NAVParser {
         }
     }
 
+    /// Strip HTML tags from a string, leaving only text content
+    private static func stripInnerHTML(_ html: String) -> String {
+        html.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+    }
+
     private static func parseAnchors(_ nav: String, entries: inout [TOCEntry]) {
         // Simple fallback: find all anchors with href
-        let anchorPattern = "<a[^>]+href=\"([^\"]+)\"[^>]*>([^<]+)</a>"
+        // Use [\s\S]*? to handle anchors with inner HTML like <span>Chapter 1</span>
+        let anchorPattern = "<a[^>]+href=\"([^\"]+)\"[^>]*>([\\s\\S]*?)</a>"
 
         guard let regex = try? NSRegularExpression(pattern: anchorPattern, options: []) else {
             return
@@ -204,7 +211,7 @@ enum NAVParser {
             }
 
             var href = String(nav[hrefRange])
-            let title = String(nav[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let title = stripInnerHTML(String(nav[titleRange])).trimmingCharacters(in: .whitespacesAndNewlines)
 
             // Remove fragment identifier
             if let hashIndex = href.firstIndex(of: "#") {
