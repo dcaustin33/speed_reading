@@ -48,7 +48,6 @@
 		E81000002B5F1A0000001000 /* ReaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001000 /* ReaderViewModel.swift */; };
 		E81000002B5F1A0000001001 /* ProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001001 /* ProgressBarView.swift */; };
 		E81000002B5F1A0000001002 /* StatsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001002 /* StatsBarView.swift */; };
-		E81000002B5F1A0000001200 /* ChapterOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001200 /* ChapterOverlayView.swift */; };
 		E81000002B5F1A0000001201 /* CompletionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001201 /* CompletionOverlayView.swift */; };
 		E81000002B5F1A0000001202 /* NavigationOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001202 /* NavigationOverlayView.swift */; };
 		E81000002B5F1A0000001400 /* SearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001400 /* SearchService.swift */; };
@@ -101,7 +100,6 @@
 		E81000012B5F1A0000001000 /* ReaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderViewModel.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001001 /* ProgressBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBarView.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001002 /* StatsBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsBarView.swift; sourceTree = "<group>"; };
-		E81000012B5F1A0000001200 /* ChapterOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterOverlayView.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001201 /* CompletionOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompletionOverlayView.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001202 /* NavigationOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationOverlayView.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001400 /* SearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchService.swift; sourceTree = "<group>"; };
@@ -265,7 +263,6 @@
 				E81000012B5F1A0000000801 /* ORPDisplayView.swift */,
 				E81000012B5F1A0000001001 /* ProgressBarView.swift */,
 				E81000012B5F1A0000001002 /* StatsBarView.swift */,
-				E81000012B5F1A0000001200 /* ChapterOverlayView.swift */,
 				E81000012B5F1A0000001201 /* CompletionOverlayView.swift */,
 				E81000012B5F1A0000001202 /* NavigationOverlayView.swift */,
 			);
@@ -487,7 +484,6 @@
 				E81000002B5F1A0000001000 /* ReaderViewModel.swift in Sources */,
 				E81000002B5F1A0000001001 /* ProgressBarView.swift in Sources */,
 				E81000002B5F1A0000001002 /* StatsBarView.swift in Sources */,
-				E81000002B5F1A0000001200 /* ChapterOverlayView.swift in Sources */,
 				E81000002B5F1A0000001201 /* CompletionOverlayView.swift in Sources */,
 				E81000002B5F1A0000001202 /* NavigationOverlayView.swift in Sources */,
 				E81000002B5F1A0000001400 /* SearchService.swift in Sources */,
