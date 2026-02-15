@@ -4,8 +4,10 @@ import Foundation
 enum TokenizerService {
     // Known abbreviations that don't end sentences
     private static let abbreviations: Set<String> = [
-        "dr.", "mr.", "mrs.", "ms.", "jr.", "sr.", "vs.",
-        "etc.", "inc.", "ltd.", "corp.", "co.",
+        "dr.", "mr.", "mrs.", "ms.", "jr.", "sr.", "prof.", "gen.", "vs.",
+        "etc.", "inc.", "ltd.", "corp.", "co.", "dept.",
+        "e.g.", "i.e.", "a.m.", "p.m.",
+        "u.s.", "u.k.",
         "st.", "ave.", "blvd.", "rd.", "apt.",
         "no.", "vol.", "pg.", "pp.", "fig.",
         "jan.", "feb.", "mar.", "apr.", "jun.", "jul.", "aug.", "sep.", "sept.", "oct.", "nov.", "dec.",
