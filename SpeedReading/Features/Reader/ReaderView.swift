@@ -251,7 +251,6 @@ struct ReaderView: View {
 
     private var backButton: some View {
         Button {
-            viewModel.onDisappear()
             router.pop()
         } label: {
             Image(systemName: "chevron.left")

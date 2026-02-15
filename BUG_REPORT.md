@@ -112,10 +112,12 @@
 
 **Resolution:** Fixed — replaced `.onLongPressGesture` with `.simultaneousGesture(LongPressGesture(minimumDuration: 0.5).onEnded { ... })` so tap recognition is no longer delayed by gesture disambiguation.
 
-### U6. Back button double-calls onDisappear causing redundant file I/O [🔄 IN PROGRESS]
+### - [x] U6. Back button double-calls onDisappear causing redundant file I/O
 - **File:** `Features/Reader/ReaderView.swift:249, :63`
 - **Description:** The back button manually calls `viewModel.onDisappear()`, then `router.pop()` triggers `.onDisappear` which calls it again. `saveProgress()` writes to disk twice.
 - **Fix:** Remove `viewModel.onDisappear()` from the back button; rely on `.onDisappear`.
+
+**Resolution:** Fixed — removed manual `viewModel.onDisappear()` call from back button action. The `.onDisappear` modifier already handles cleanup when `router.pop()` triggers view removal.
 
 ---
 
