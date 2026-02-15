@@ -532,6 +532,17 @@ class ReaderViewModel {
         isCompleted = false
     }
 
+    // MARK: - Settings Reload
+
+    /// Reloads settings from disk. Call when returning from settings to pick up changes
+    /// made by SettingsViewModel's separate LibraryDataService instance.
+    func reloadSettings() {
+        try? libraryDataService.loadLibrary()
+        let settings = libraryDataService.settings
+        playbackEngine.wordSkip = settings.wordSkip
+        // fontSize reads directly from libraryDataService.settings, so it updates automatically
+    }
+
     // MARK: - Cleanup
 
     /// Called when leaving the reader screen

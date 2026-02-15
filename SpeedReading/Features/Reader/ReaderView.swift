@@ -56,6 +56,11 @@ struct ReaderView: View {
         .sheet(isPresented: $showMenu) {
             MenuView(bookId: bookId, showMenu: $showMenu, viewModel: viewModel)
         }
+        .onChange(of: showMenu) { _, isShowing in
+            if !isShowing {
+                viewModel.reloadSettings()
+            }
+        }
         .task {
             viewModel.loadBook()
         }
