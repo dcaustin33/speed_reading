@@ -73,7 +73,7 @@
 - **Description:** Chapter `startWordIndex` values use `components(separatedBy: .whitespacesAndNewlines)` (simple split), but reading uses `TokenizerService` which splits hyphenated words. Chapter boundaries progressively drift as hyphenated words accumulate.
 - **Fix:** Use the same tokenization logic when computing chapter `startWordIndex`.
 
-### S5. ISO-8859-1 always succeeds, making CP-1252/ASCII fallback unreachable
+### - [x] S5. ISO-8859-1 always succeeds, making CP-1252/ASCII fallback unreachable
 - **File:** `Services/FileImport/FileImportService.swift:116-126`
 - **Description:** `.isoLatin1` maps every byte 0x00-0xFF to a character, so the fallback paths to CP-1252 and ASCII are dead code. Windows-1252 files render smart quotes and em-dashes incorrectly.
 - **Fix:** Check for CP-1252 before ISO-8859-1, or use heuristic detection.
