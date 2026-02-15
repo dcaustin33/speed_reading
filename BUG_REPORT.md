@@ -78,7 +78,7 @@
 - **Description:** `.isoLatin1` maps every byte 0x00-0xFF to a character, so the fallback paths to CP-1252 and ASCII are dead code. Windows-1252 files render smart quotes and em-dashes incorrectly.
 - **Fix:** Check for CP-1252 before ISO-8859-1, or use heuristic detection.
 
-### S6. HTML entity double-decoding
+### - [x] S6. HTML entity double-decoding
 - **File:** `Services/EPUB/HTMLStripper.swift:94-135`
 - **Description:** `&amp;` is decoded to `&` *before* numeric entities are processed. So `&amp;#169;` becomes `&#169;` then `©` — the correct output should be literal `&#169;`.
 - **Fix:** Decode numeric entities first, then named entities, or use a single-pass approach.

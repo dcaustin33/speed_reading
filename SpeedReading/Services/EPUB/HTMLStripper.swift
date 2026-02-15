@@ -94,7 +94,38 @@ enum HTMLStripper {
     private static func decodeHTMLEntities(_ text: String) -> String {
         var result = text
 
-        // Named entities - common ones per spec
+        // Decode numeric entities FIRST, before named entities.
+        // This prevents double-decoding: &amp;#169; should become &#169; (literal),
+        // not © (which happens if &amp; is decoded to & before numeric processing).
+
+        // Numeric entities (decimal): &#123;
+        if let regex = try? NSRegularExpression(pattern: "&#(\\d+);", options: []) {
+            let matches = regex.matches(in: result, options: [], range: NSRange(result.startIndex..., in: result))
+            // Process in reverse to not invalidate ranges
+            for match in matches.reversed() {
+                if let codeRange = Range(match.range(at: 1), in: result),
+                   let fullRange = Range(match.range, in: result),
+                   let codePoint = Int(result[codeRange]),
+                   let scalar = Unicode.Scalar(codePoint) {
+                    result.replaceSubrange(fullRange, with: String(Character(scalar)))
+                }
+            }
+        }
+
+        // Numeric entities (hex): &#x1F4;
+        if let regex = try? NSRegularExpression(pattern: "&#x([0-9a-fA-F]+);", options: []) {
+            let matches = regex.matches(in: result, options: [], range: NSRange(result.startIndex..., in: result))
+            for match in matches.reversed() {
+                if let codeRange = Range(match.range(at: 1), in: result),
+                   let fullRange = Range(match.range, in: result),
+                   let codePoint = Int(result[codeRange], radix: 16),
+                   let scalar = Unicode.Scalar(codePoint) {
+                    result.replaceSubrange(fullRange, with: String(Character(scalar)))
+                }
+            }
+        }
+
+        // Named entities - decoded AFTER numeric to prevent double-decoding
         let namedEntities: [String: String] = [
             "&nbsp;": " ",
             "&amp;": "&",
@@ -132,33 +163,6 @@ enum HTMLStripper {
 
         for (entity, replacement) in namedEntities {
             result = result.replacingOccurrences(of: entity, with: replacement)
-        }
-
-        // Numeric entities (decimal): &#123;
-        if let regex = try? NSRegularExpression(pattern: "&#(\\d+);", options: []) {
-            let matches = regex.matches(in: result, options: [], range: NSRange(result.startIndex..., in: result))
-            // Process in reverse to not invalidate ranges
-            for match in matches.reversed() {
-                if let codeRange = Range(match.range(at: 1), in: result),
-                   let fullRange = Range(match.range, in: result),
-                   let codePoint = Int(result[codeRange]),
-                   let scalar = Unicode.Scalar(codePoint) {
-                    result.replaceSubrange(fullRange, with: String(Character(scalar)))
-                }
-            }
-        }
-
-        // Numeric entities (hex): &#x1F4;
-        if let regex = try? NSRegularExpression(pattern: "&#x([0-9a-fA-F]+);", options: []) {
-            let matches = regex.matches(in: result, options: [], range: NSRange(result.startIndex..., in: result))
-            for match in matches.reversed() {
-                if let codeRange = Range(match.range(at: 1), in: result),
-                   let fullRange = Range(match.range, in: result),
-                   let codePoint = Int(result[codeRange], radix: 16),
-                   let scalar = Unicode.Scalar(codePoint) {
-                    result.replaceSubrange(fullRange, with: String(Character(scalar)))
-                }
-            }
         }
 
         return result
