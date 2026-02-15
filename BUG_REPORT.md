@@ -105,12 +105,14 @@
 
 **Resolution:** Fixed — added `.onAppear { viewModel.loadLibrary() }` to LibraryView so library data refreshes when navigating back from Reader.
 
-### U5. Tap gesture delayed by long press in Library grid [🔄 IN PROGRESS]
+### - [x] U5. Tap gesture delayed by long press in Library grid
 - **File:** `Features/Library/LibraryView.swift:101-106`
 - **Description:** `.onTapGesture` + `.onLongPressGesture` causes SwiftUI to delay tap recognition (~0.5s) while disambiguating gestures.
 - **Fix:** Use `.simultaneousGesture(LongPressGesture(...))` or restructure.
 
-### U6. Back button double-calls onDisappear causing redundant file I/O
+**Resolution:** Fixed — replaced `.onLongPressGesture` with `.simultaneousGesture(LongPressGesture(minimumDuration: 0.5).onEnded { ... })` so tap recognition is no longer delayed by gesture disambiguation.
+
+### U6. Back button double-calls onDisappear causing redundant file I/O [🔄 IN PROGRESS]
 - **File:** `Features/Reader/ReaderView.swift:249, :63`
 - **Description:** The back button manually calls `viewModel.onDisappear()`, then `router.pop()` triggers `.onDisappear` which calls it again. `saveProgress()` writes to disk twice.
 - **Fix:** Remove `viewModel.onDisappear()` from the back button; rely on `.onDisappear`.
