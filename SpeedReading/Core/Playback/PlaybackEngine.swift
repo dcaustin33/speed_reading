@@ -462,7 +462,14 @@ class PlaybackEngine {
 
         // Check if this is the last word
         if currentWordIndex >= totalWords - 1 {
+            // Sleep for normal word delay so the last word is visible
+            do {
+                try await Task.sleep(nanoseconds: UInt64(delayMs) * 1_000_000)
+            } catch {
+                return // Task was cancelled
+            }
             state = .paused
+            currentWordIndex = totalWords
             onStateChange?(.paused)
             onComplete?()
             return
