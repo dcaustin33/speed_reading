@@ -83,7 +83,7 @@
 - **Description:** `&amp;` is decoded to `&` *before* numeric entities are processed. So `&amp;#169;` becomes `&#169;` then `©` — the correct output should be literal `&#169;`.
 - **Fix:** Decode numeric entities first, then named entities, or use a single-pass approach.
 
-### S7. NCX parser mishandles nested navPoints
+### - [x] S7. NCX parser mishandles nested navPoints
 - **File:** `Services/EPUB/NCXParser.swift:65`
 - **Description:** The regex `<navPoint[^>]*>([\s\S]*?)</navPoint>` uses non-greedy matching to the first `</navPoint>`. Nested navPoints (common with parts containing chapters) produce duplicate/incorrect TOC entries.
 - **Fix:** Use an iterative/stack-based parser instead of regex for nested structures.
@@ -98,12 +98,14 @@
 - **Description:** `fontSize` and `wordSkip` use `didSet` with `@Observable`, which risks stack overflow on re-entry per the project's established pattern. Fragile even if currently safe.
 - **Fix:** Use private backing + computed property pattern like PlaybackEngine.
 
-### U4. Library doesn't refresh book progress after reading
+### - [x] U4. Library doesn't refresh book progress after reading
 - **File:** `Features/Library/LibraryView.swift`
 - **Description:** No `.onAppear` or similar mechanism refreshes the book list when navigating back from the Reader. Book card progress bars show old reading positions until the app restarts.
 - **Fix:** Add `.onAppear { viewModel.loadLibrary() }` to LibraryView.
 
-### U5. Tap gesture delayed by long press in Library grid
+**Resolution:** Fixed — added `.onAppear { viewModel.loadLibrary() }` to LibraryView so library data refreshes when navigating back from Reader.
+
+### U5. Tap gesture delayed by long press in Library grid [🔄 IN PROGRESS]
 - **File:** `Features/Library/LibraryView.swift:101-106`
 - **Description:** `.onTapGesture` + `.onLongPressGesture` causes SwiftUI to delay tap recognition (~0.5s) while disambiguating gestures.
 - **Fix:** Use `.simultaneousGesture(LongPressGesture(...))` or restructure.
