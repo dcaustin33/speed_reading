@@ -127,6 +127,17 @@ class ReaderViewModel {
     /// Task reference for book loading (enables cancellation)
     private var loadTask: Task<Void, Never>?
 
+    // MARK: - Paragraph Preview State
+
+    /// Whether the paragraph preview overlay is currently visible
+    private(set) var isParagraphPreviewVisible: Bool = false
+
+    /// The text of the current paragraph for the preview overlay
+    private(set) var paragraphPreviewText: String = ""
+
+    /// The index of the current word within the paragraph (for highlighting)
+    private(set) var paragraphHighlightWordIndex: Int = 0
+
     // MARK: - Navigation Overlay State
 
     /// Whether the navigation overlay is currently visible
@@ -442,6 +453,22 @@ class ReaderViewModel {
         if isNavigationOverlayVisible {
             resetNavigationOverlayTimer()
         }
+    }
+
+    // MARK: - Paragraph Preview
+
+    /// Shows the paragraph preview overlay with the current paragraph text
+    func showParagraphPreview() {
+        guard let result = playbackEngine.currentParagraphText() else { return }
+        if isPlaying { pause() }
+        paragraphPreviewText = result.text
+        paragraphHighlightWordIndex = result.highlightWordIndex
+        isParagraphPreviewVisible = true
+    }
+
+    /// Hides the paragraph preview overlay
+    func hideParagraphPreview() {
+        isParagraphPreviewVisible = false
     }
 
     // MARK: - Progress Saving

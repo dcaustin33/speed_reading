@@ -391,6 +391,34 @@ class PlaybackEngine {
         checkChapterChange()
     }
 
+    /// Returns the text of the paragraph containing the current word, and the index
+    /// of the current word within that paragraph (for highlighting).
+    func currentParagraphText() -> (text: String, highlightWordIndex: Int)? {
+        guard let doc = document, totalWords > 0, currentWordIndex < totalWords else { return nil }
+
+        // Find paragraph start: scan backward for paragraphEnd
+        var start = 0
+        for i in stride(from: currentWordIndex - 1, through: 0, by: -1) {
+            if doc.words[i].paragraphEnd {
+                start = i + 1
+                break
+            }
+        }
+
+        // Find paragraph end: scan forward for paragraphEnd (inclusive)
+        var end = totalWords - 1
+        for i in currentWordIndex..<totalWords {
+            if doc.words[i].paragraphEnd {
+                end = i
+                break
+            }
+        }
+
+        let words = doc.words[start...end].map(\.text)
+        let highlightIndex = currentWordIndex - start
+        return (text: words.joined(separator: " "), highlightWordIndex: highlightIndex)
+    }
+
     /// Jumps to a specific word index
     /// - Parameter wordIndex: The word index to jump to
     func jumpTo(wordIndex: Int) {

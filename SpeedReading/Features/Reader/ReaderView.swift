@@ -26,6 +26,18 @@ struct ReaderView: View {
             } else {
                 readerContent
 
+                // Paragraph preview overlay
+                if viewModel.isParagraphPreviewVisible {
+                    ParagraphOverlayView(
+                        paragraphText: viewModel.paragraphPreviewText,
+                        highlightWordIndex: viewModel.paragraphHighlightWordIndex,
+                        onDismiss: {
+                            viewModel.hideParagraphPreview()
+                        }
+                    )
+                    .animation(.easeInOut(duration: 0.2), value: viewModel.isParagraphPreviewVisible)
+                }
+
                 // Completion overlay (per spec Section 3.8)
                 // Only dismissal option is the "Return to Library" button
                 if viewModel.isCompleted {
@@ -180,6 +192,18 @@ struct ReaderView: View {
     private var menuButtonArea: some View {
         HStack {
             Spacer()
+
+            // Paragraph preview button
+            Button {
+                viewModel.showParagraphPreview()
+            } label: {
+                Image(systemName: "text.justify.left")
+                    .font(.title2)
+                    .foregroundStyle(Theme.Colors.primaryText)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("Show full paragraph")
+            .accessibilityHint("Display the current paragraph in traditional reading format")
 
             // Navigation overlay toggle button
             Button {
