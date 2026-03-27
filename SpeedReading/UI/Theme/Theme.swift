@@ -2,17 +2,41 @@ import SwiftUI
 
 enum Theme {
     enum Colors {
-        /// Main background color - Dark (#1A1A1A)
-        static let background = Color(hex: 0x1A1A1A)
+        /// Main background color
+        static let background: Color = {
+            #if os(visionOS)
+            return .clear
+            #else
+            return Color(hex: 0x1A1A1A)
+            #endif
+        }()
 
-        /// Card/elevated surface background - Slightly lighter (#2A2A2A)
-        static let cardBackground = Color(hex: 0x2A2A2A)
+        /// Card/elevated surface background
+        static let cardBackground: Color = {
+            #if os(visionOS)
+            return .clear
+            #else
+            return Color(hex: 0x2A2A2A)
+            #endif
+        }()
 
-        /// Primary text color - Light gray (#E0E0E0)
-        static let primaryText = Color(hex: 0xE0E0E0)
+        /// Primary text color
+        static let primaryText: Color = {
+            #if os(visionOS)
+            return .primary
+            #else
+            return Color(hex: 0xE0E0E0)
+            #endif
+        }()
 
-        /// Secondary text color - Medium gray (#888888)
-        static let secondaryText = Color(hex: 0x888888)
+        /// Secondary text color
+        static let secondaryText: Color = {
+            #if os(visionOS)
+            return .secondary
+            #else
+            return Color(hex: 0x888888)
+            #endif
+        }()
 
         /// Accent color for interactive elements - Blue (#4A90D9)
         static let accent = Color(hex: 0x4A90D9)
@@ -39,7 +63,13 @@ enum Theme {
         static let progressBarHeight: CGFloat = 8
 
         /// Default font size for ORP display
-        static let defaultFontSize: CGFloat = 48
+        static let defaultFontSize: CGFloat = {
+            #if os(visionOS)
+            return 64
+            #else
+            return 48
+            #endif
+        }()
 
         /// Minimum font size for ORP display
         static let minFontSize: CGFloat = 24
@@ -54,6 +84,9 @@ enum Theme {
 
         /// Navigation overlay fade animation duration
         static let navigationOverlayFadeDuration: Double = 0.3
+
+        /// visionOS ornament auto-hide delay (longer than iOS for spatial discovery)
+        static let ornamentHideDelay: TimeInterval = 3.0
     }
 
     enum Navigation {
