@@ -212,7 +212,12 @@
   - Resolve any `#if os(visionOS)` conditional gaps
   - Verify all shared files compile on both targets without warnings
 
-- [ ] **Task 11: Write unit tests for new visionOS components**
+- [x] **Task 11: Write unit tests for new visionOS components**
+  - ✅ Completed: 2026-03-26
+  - Tests: `FontMetricsTests.swift` (7 tests, all passing), `SpatialNavigationStateTests.swift` (8 tests, all passing)
+  - Implementation: Standalone Swift scripts matching existing test pattern. FontMetrics tests verify width > 0, determinism, reasonable range (24-96pt), linear scaling. SpatialNavigationState tests verify selectBook/closeReader state machine, double select, close-when-closed, select-close-select cycle.
+  - Notes: No XCTest target exists — tests follow repo convention of standalone `swift` scripts. Both iOS and visionOS builds verified clean.
+  - Files changed: `tests/FontMetricsTests.swift` (new), `tests/SpatialNavigationStateTests.swift` (new)
 
   Add unit tests for the new cross-platform and visionOS-specific components per spec §10.
 
