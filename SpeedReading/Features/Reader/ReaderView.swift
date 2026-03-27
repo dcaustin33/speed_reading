@@ -99,7 +99,11 @@ struct ReaderView: View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 48))
+                #if os(visionOS)
+                .foregroundStyle(.red)
+                #else
                 .foregroundStyle(Theme.Colors.orpHighlight)
+                #endif
                 .accessibilityHidden(true)
 
             Text(message)
@@ -110,10 +114,19 @@ struct ReaderView: View {
             Button("Return to Library") {
                 router.pop()
             }
+            #if os(visionOS)
+            .buttonStyle(.bordered)
+            .hoverEffect(.highlight)
+            #else
             .foregroundStyle(Theme.Colors.accent)
+            #endif
             .accessibilityLabel("Return to Library")
             .accessibilityHint("Go back to your book list")
         }
+        #if os(visionOS)
+        .padding(32)
+        .glassBackgroundEffect()
+        #endif
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Error: \(message)")
     }

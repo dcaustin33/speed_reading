@@ -140,12 +140,17 @@ struct LibraryView: View {
         }
         .accessibilityLabel("Import book")
         .accessibilityHint("Opens file picker to import a book from Files")
+        #if os(visionOS)
+        .hoverEffect(.highlight)
+        #endif
     }
 
     private var loadingOverlay: some View {
         ZStack {
+            #if !os(visionOS)
             Color.black.opacity(0.5)
                 .ignoresSafeArea()
+            #endif
 
             VStack(spacing: 16) {
                 ProgressView()
@@ -153,11 +158,19 @@ struct LibraryView: View {
                     .scaleEffect(1.5)
 
                 Text("Importing...")
+                    #if os(visionOS)
+                    .foregroundStyle(Theme.Colors.secondaryText)
+                    #else
                     .foregroundStyle(Theme.Colors.primaryText)
+                    #endif
             }
             .padding(32)
+            #if os(visionOS)
+            .glassBackgroundEffect()
+            #else
             .background(Theme.Colors.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 16))
+            #endif
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Importing book, please wait")
             .accessibilityAddTraits(.isStaticText)

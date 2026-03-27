@@ -54,6 +54,10 @@ struct BookCardView: View {
             }
         }
         .contentShape(Rectangle())
+        #if os(visionOS)
+        .glassBackgroundEffect()
+        .hoverEffect(.highlight)
+        #endif
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
         .accessibilityValue(accessibilityValue)
