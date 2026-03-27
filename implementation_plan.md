@@ -44,7 +44,12 @@
   - Verify iOS ORP display still renders identically after the change
   - Verify visionOS target compiles with the new FontMetrics
 
-- [ ] **Task 3: Migrate LibraryView from DocumentPicker to .fileImporter()**
+- [x] **Task 3: Migrate LibraryView from DocumentPicker to .fileImporter()**
+  - ✅ Completed: 2026-03-26
+  - Tests: iOS build succeeds, visionOS Swift compilation succeeds (linker expects @main from Task 6)
+  - Implementation: Replaced `.documentPicker()` custom modifier with SwiftUI `.fileImporter()`, added `import UniformTypeIdentifiers`, deleted `DocumentPicker.swift` and removed from Xcode project
+  - Notes: Same UTTypes as before (.plainText, .md, .epub). No unit test possible for SwiftUI system modifier.
+  - Files changed: `SpeedReading/Features/Library/LibraryView.swift`, `SpeedReading/Services/FileImport/DocumentPicker.swift` (deleted), `project.pbxproj`
 
   Replace the `UIViewControllerRepresentable` `DocumentPicker` with SwiftUI's built-in `.fileImporter()`. This removes the only `UIViewControllerRepresentable` usage, which is unavailable on visionOS.
 

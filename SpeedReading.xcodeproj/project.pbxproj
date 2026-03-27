@@ -33,7 +33,7 @@
 		E81000002B5F1A0000000400 /* FileImportError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000400 /* FileImportError.swift */; };
 		E81000002B5F1A0000000401 /* MarkdownStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000401 /* MarkdownStripper.swift */; };
 		E81000002B5F1A0000000402 /* FileImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000402 /* FileImportService.swift */; };
-		E81000002B5F1A0000000403 /* DocumentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000403 /* DocumentPicker.swift */; };
+
 		E81000002B5F1A0000000500 /* HTMLStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000500 /* HTMLStripper.swift */; };
 		E81000002B5F1A0000000501 /* DRMDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000501 /* DRMDetector.swift */; };
 		E81000002B5F1A0000000502 /* OPFParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000502 /* OPFParser.swift */; };
@@ -135,7 +135,7 @@
 		E81000012B5F1A0000000400 /* FileImportError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileImportError.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000401 /* MarkdownStripper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownStripper.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000402 /* FileImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileImportService.swift; sourceTree = "<group>"; };
-		E81000012B5F1A0000000403 /* DocumentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPicker.swift; sourceTree = "<group>"; };
+
 		E81000012B5F1A0000000500 /* HTMLStripper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTMLStripper.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000501 /* DRMDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DRMDetector.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000000502 /* OPFParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OPFParser.swift; sourceTree = "<group>"; };
@@ -372,7 +372,7 @@
 				E81000012B5F1A0000000400 /* FileImportError.swift */,
 				E81000012B5F1A0000000401 /* MarkdownStripper.swift */,
 				E81000012B5F1A0000000402 /* FileImportService.swift */,
-				E81000012B5F1A0000000403 /* DocumentPicker.swift */,
+
 			);
 			path = FileImport;
 			sourceTree = "<group>";
@@ -569,7 +569,7 @@
 				E81000002B5F1A0000000400 /* FileImportError.swift in Sources */,
 				E81000002B5F1A0000000401 /* MarkdownStripper.swift in Sources */,
 				E81000002B5F1A0000000402 /* FileImportService.swift in Sources */,
-				E81000002B5F1A0000000403 /* DocumentPicker.swift in Sources */,
+
 				E81000002B5F1A0000000500 /* HTMLStripper.swift in Sources */,
 				E81000002B5F1A0000000501 /* DRMDetector.swift in Sources */,
 				E81000002B5F1A0000000502 /* OPFParser.swift in Sources */,

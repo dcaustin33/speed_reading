@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct LibraryView: View {
     @EnvironmentObject var router: NavigationRouter
@@ -43,10 +44,16 @@ struct LibraryView: View {
                 editModeToolbar
             }
         }
-        .documentPicker(
+        .fileImporter(
             isPresented: $viewModel.showingDocumentPicker,
-            onSelect: { url in
-                viewModel.handleFileSelected(url)
+            allowedContentTypes: [.plainText, UTType(filenameExtension: "md") ?? .plainText, .epub],
+            onCompletion: { result in
+                switch result {
+                case .success(let url):
+                    viewModel.handleFileSelected(url)
+                case .failure:
+                    break
+                }
             }
         )
         .alert("Error", isPresented: $viewModel.showingError) {
