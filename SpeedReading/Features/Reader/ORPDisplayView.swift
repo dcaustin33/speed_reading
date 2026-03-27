@@ -90,11 +90,7 @@ struct ORPDisplayView: View {
     }
 
     private func calculateCharacterWidth() {
-        // Measure the width of a single character in the monospace font
-        let font = UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
-        let attributes = [NSAttributedString.Key.font: font]
-        let size = ("W" as NSString).size(withAttributes: attributes)
-        characterWidth = size.width
+        characterWidth = FontMetrics.monospacedCharacterWidth(fontSize: fontSize)
     }
 
     private func updateChunks() {
@@ -218,10 +214,7 @@ class ORPDisplayViewModel {
     }
 
     private func recalculateCharacterWidth() {
-        let font = UIFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
-        let attributes = [NSAttributedString.Key.font: font]
-        let size = ("W" as NSString).size(withAttributes: attributes)
-        characterWidth = size.width
+        characterWidth = FontMetrics.monospacedCharacterWidth(fontSize: fontSize)
     }
 
     private func recalculateChunks() {
@@ -291,9 +284,7 @@ struct ORPDisplayViewWithViewModel: View {
     }
 
     private func calculateOffset(chunk: ORPDisplayLogic.DisplayChunk, containerWidth: CGFloat) -> CGFloat {
-        let font = UIFont.monospacedSystemFont(ofSize: viewModel.fontSize, weight: .regular)
-        let attributes = [NSAttributedString.Key.font: font]
-        let characterWidth = ("W" as NSString).size(withAttributes: attributes).width
+        let characterWidth = FontMetrics.monospacedCharacterWidth(fontSize: viewModel.fontSize)
 
         let charOffset = ORPDisplayLogic.calculateCenteringOffset(
             wordLength: chunk.text.count,

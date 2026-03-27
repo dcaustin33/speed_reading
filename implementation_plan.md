@@ -28,7 +28,12 @@
   - Create visionOS Xcode scheme ("SpeedReading visionOS")
   - Verify the iOS target still builds: `xcodebuild build -scheme SpeedReading -destination 'platform=iOS Simulator,name=iPhone 16'`
 
-- [ ] **Task 2: Create FontMetrics utility and fix UIFont usage**
+- [x] **Task 2: Create FontMetrics utility and fix UIFont usage**
+  - ✅ Completed: 2026-03-26
+  - Tests: iOS build succeeds, visionOS Swift compilation succeeds (linker expects @main from Task 6)
+  - Implementation: Created `FontMetrics.swift` with `#if os(visionOS)` CTFont / `#else` UIFont. Replaced all 3 UIFont calls in ORPDisplayView.swift.
+  - Notes: visionOS linker error for `_main` is expected — entry point created in Task 6
+  - Files changed: `SpeedReading/UI/Helpers/FontMetrics.swift` (new), `SpeedReading/Features/Reader/ORPDisplayView.swift`, `project.pbxproj`
 
   Replace all `UIFont` usage in `ORPDisplayView.swift` with a cross-platform `FontMetrics` utility. `UIFont` is unavailable on visionOS — this is the critical compilation blocker.
 
