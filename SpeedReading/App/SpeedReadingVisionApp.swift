@@ -4,18 +4,29 @@ import SwiftUI
 @main
 struct SpeedReadingVisionApp: App {
     @State private var navState = SpatialNavigationState()
+    @State private var immersionStyle: ImmersionStyle = .mixed
 
     var body: some Scene {
         WindowGroup {
+            LibraryCoordinatorView()
+                .environment(navState)
+                .environmentObject(NavigationRouter())
+                .frame(width: 900, height: 600)
+                .glassBackgroundEffect()
+        }
+        .windowStyle(.plain)
+        .windowResizability(.contentSize)
+        .defaultSize(width: 900, height: 600)
+
+        WindowGroup(id: "reader") {
             Group {
-                if navState.isReaderOpen, let bookId = navState.selectedBookId {
+                if let bookId = navState.selectedBookId {
                     ReaderWindowView(bookId: bookId)
                         .frame(width: 500, height: 125)
                         .glassBackgroundEffect()
                 } else {
-                    ContentView()
-                        .environmentObject(NavigationRouter())
-                        .frame(width: 900, height: 600)
+                    Text("No book selected")
+                        .padding()
                         .glassBackgroundEffect()
                 }
             }
@@ -23,13 +34,48 @@ struct SpeedReadingVisionApp: App {
         }
         .windowStyle(.plain)
         .windowResizability(.contentSize)
-        .defaultSize(width: 900, height: 600)
+        .defaultSize(width: 500, height: 125)
 
         ImmersiveSpace(id: "immersiveReader") {
-            Text("Immersive reader — coming in Phase 1B")
+            SpatialReaderView()
                 .environment(navState)
         }
-        .immersionStyle(selection: .constant(.mixed), in: .mixed)
+        .immersionStyle(selection: $immersionStyle, in: .mixed)
+    }
+}
+
+/// Wraps the library content and coordinates immersive space open/dismiss
+/// based on SpatialNavigationState changes.
+struct LibraryCoordinatorView: View {
+    @Environment(SpatialNavigationState.self) private var navState
+    @Environment(\.openImmersiveSpace) private var openImmersiveSpace
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+    @Environment(\.openWindow) private var openWindow
+
+    var body: some View {
+        ContentView()
+            .onChange(of: navState.isReaderOpen) { _, isOpen in
+                if isOpen {
+                    Task {
+                        let result = await openImmersiveSpace(id: "immersiveReader")
+                        switch result {
+                        case .opened:
+                            navState.immersiveSpaceOpened()
+                        case .userCancelled:
+                            navState.closeReader()
+                        case .error:
+                            navState.immersiveSpaceFailed("Failed to open immersive space")
+                            openWindow(id: "reader")
+                        @unknown default:
+                            break
+                        }
+                    }
+                } else {
+                    Task {
+                        await dismissImmersiveSpace()
+                    }
+                }
+            }
     }
 }
 #endif

@@ -98,6 +98,17 @@ enum Theme {
         static let ornamentHideDelay: TimeInterval = 3.0
     }
 
+    enum Spatial {
+        /// Font size for ORP word in immersive space (points)
+        static let fontSize: CGFloat = 72
+
+        /// Distance from user to ORP word in immersive space (meters)
+        static let viewingDistance: Float = 2.0
+
+        /// Vertical offset for control bar below ORP word (meters, negative = below)
+        static let controlBarOffset: Float = -0.3
+    }
+
     enum Navigation {
         /// Navigation button size
         static let buttonSize: CGFloat = 56

@@ -108,6 +108,7 @@
 		E8A000002B5F1A000000001900 /* SpeedReadingVisionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001900 /* SpeedReadingVisionApp.swift */; };
 		E8A000002B5F1A000000003000 /* ReaderWindowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000003000 /* ReaderWindowView.swift */; };
 		E8A000002B5F1A000000002000 /* SpatialNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000002000 /* SpatialNavigationState.swift */; };
+		E8A000002B5F1A000000004000 /* SpatialReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000004000 /* SpatialReaderView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -165,6 +166,7 @@
 		E81000012B5F1A0000001900 /* SpeedReadingVisionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedReadingVisionApp.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000003000 /* ReaderWindowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderWindowView.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000002000 /* SpatialNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialNavigationState.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000004000 /* SpatialReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialReaderView.swift; sourceTree = "<group>"; };
 		E80000002B5F1A0000000002 /* SpeedReading visionOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SpeedReading visionOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -248,6 +250,7 @@
 			children = (
 				E81000012B5F1A0000002000 /* SpatialNavigationState.swift */,
 				E81000012B5F1A0000003000 /* ReaderWindowView.swift */,
+				E81000012B5F1A0000004000 /* SpatialReaderView.swift */,
 			);
 			path = VisionOS;
 			sourceTree = "<group>";
@@ -667,6 +670,7 @@
 				E8A000002B5F1A000000001900 /* SpeedReadingVisionApp.swift in Sources */,
 				E8A000002B5F1A000000002000 /* SpatialNavigationState.swift in Sources */,
 				E8A000002B5F1A000000003000 /* ReaderWindowView.swift in Sources */,
+				E8A000002B5F1A000000004000 /* SpatialReaderView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

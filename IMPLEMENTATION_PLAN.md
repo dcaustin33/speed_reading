@@ -41,7 +41,12 @@
 
 ---
 
-- [ ] **Task 2: Upgrade SpeedReadingVisionApp Scene Structure**
+- [x] **Task 2: Upgrade SpeedReadingVisionApp Scene Structure**
+  - ✅ Completed: 2026-03-27
+  - Tests: `tests/SpatialNavigationStateTests.swift` (18 tests, all passing — no regressions)
+  - Implementation: Restructured `SpeedReadingVisionApp` with 3 scenes: library WindowGroup (plain), fallback reader WindowGroup(id: "reader"), and ImmersiveSpace(id: "immersiveReader") with placeholder `SpatialReaderView`. Created `LibraryCoordinatorView` to wire `openImmersiveSpace`/`dismissImmersiveSpace` to `SpatialNavigationState` changes. Handles all 3 result cases (opened, userCancelled, error with windowed fallback). Added `Theme.Spatial` constants (fontSize 72, viewingDistance 2.0m, controlBarOffset -0.3m).
+  - Notes: Both iOS and visionOS targets build clean. `SpatialReaderView` is a placeholder with loading indicator — full implementation in Task 7.
+  - Files changed: `SpeedReadingVisionApp.swift`, `SpatialReaderView.swift` (new), `Theme.swift`, `project.pbxproj`
 
   Restructure the visionOS app entry point to support the immersive reading space. The library window stays `.windowStyle(.plain)` (volumetric cannot present `.fileImporter()` on visionOS 2.x — see spec constraints). The `ImmersiveSpace` stub gets replaced with `SpatialReaderView` (placeholder until Task 7). Add `@State` immersion style binding.
 
