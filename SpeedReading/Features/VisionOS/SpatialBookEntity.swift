@@ -78,6 +78,7 @@ enum SpatialBookEntity {
 
     // MARK: - Private
 
+    @MainActor
     private static func makeMaterial(coverImage: UIImage?, title: String) async -> SimpleMaterial {
         if let coverImage, let cgImage = coverImage.cgImage {
             if let texture = try? await TextureResource(image: cgImage, options: .init(semantic: .color)) {

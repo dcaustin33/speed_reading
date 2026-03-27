@@ -1,0 +1,10 @@
+schemaVersion: 1
+enabledWorkflows:
+  - simulator
+  - ui-automation
+sessionDefaults:
+  projectPath: /Users/derek/Desktop/speed_reading/SpeedReading.xcodeproj
+  scheme: SpeedReading visionOS
+  simulatorName: Apple Vision Pro
+  simulatorId: C0BF3C1E-B1DC-4965-B228-77B68F0EAB22
+  simulatorPlatform: visionOS Simulator

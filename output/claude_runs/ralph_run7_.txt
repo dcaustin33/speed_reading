@@ -1,0 +1,20 @@
+Done. Both commits landed.
+
+## Loop Summary
+
+**Task**: Task 7 — Wire up visionOS library-to-reader navigation
+**Status**: Completed
+
+### Implementation
+- **LibraryView.swift**: Added `@Environment(SpatialNavigationState.self)` and `@Environment(\.openWindow)` behind `#if os(visionOS)`. Modified `handleBookTap` to call `spatialNavState.selectBook()` + `openWindow(id: "reader")` on visionOS.
+- **ReaderView.swift**: Added `@Environment(SpatialNavigationState.self)` and `@Environment(\.dismissWindow)` behind `#if os(visionOS)`. Wired 3 dismiss points (back button, completion overlay, error view) to call `spatialNavState.closeReader()` + `dismissWindow(id: "reader")` on visionOS.
+- iOS paths unchanged — all `router.pop()` / `router.navigateTo()` calls remain in `#else` branches.
+- ContentView unchanged — NavigationStack still works for non-reader routes.
+- Files: `LibraryView.swift`, `ReaderView.swift`
+
+### Build Verification
+- iOS build: passes (XcodeBuildMCP)
+- visionOS build: passes (xcodebuild generic destination)
+
+### Next Task
+- **Task 8: Build visionOS reader with word-only window and bottom ornament** — adds the spatial reader layout with ornament auto-hide behavior.

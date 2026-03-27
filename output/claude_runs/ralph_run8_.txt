@@ -1,0 +1,22 @@
+## Loop Summary
+
+**Task**: Task 8 — Build visionOS reader with word-only window and bottom ornament
+**Status**: Completed
+
+### Tests Written
+- No unit tests (pure UI layout with compile-time `#if os(visionOS)` conditionals)
+- iOS build: verified via XcodeBuildMCP
+- visionOS build: verified via xcodebuild (full compile+link)
+
+### Implementation
+- `ReaderView.swift`: Added `#if os(visionOS)` branch to `readerContent` showing only `ORPDisplayView` in main window
+- Built bottom ornament via `.ornament(attachmentAnchor: .scene(.bottom))` containing:
+  - Play/pause, prev/next sentence buttons
+  - Paragraph preview, nav overlay toggle, menu buttons
+  - WPM display, `ProgressBarView` with scrub, `StatsBarView`
+- `.glassBackgroundEffect()` on ornament, `.hoverEffect(.highlight)` on all buttons
+- Ornament auto-hide state machine: 3s timer on play, 0.3s fade, cancel on interaction/pause/completion, pause during scrub
+- iOS code completely unchanged
+
+### Next Task
+- **Task 9**: Guard haptic feedback and finalize platform conditionals

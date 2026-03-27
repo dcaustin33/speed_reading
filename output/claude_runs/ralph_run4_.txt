@@ -1,0 +1,26 @@
+Committed successfully.
+
+## Loop Summary
+
+**Task**: Task 9 — Unit Tests for Phase 1B Components
+**Status**: Completed
+
+### Tests Written
+- `tests/SpatialControlBarAutoHideTests.swift` — 15 tests covering the auto-hide state machine:
+  - Initial state, play starts timer, timer fires hides ornament
+  - Pause/completion cancel timer and show ornament
+  - Interaction resets timer (only when playing)
+  - Scrub start pauses timer, scrub end resumes if playing
+  - Full lifecycle cycles and edge cases
+
+### Existing Tests Verified
+- `tests/SpatialNavigationStateTests.swift` — 18 tests (already covered all Task 9 subtasks)
+- `tests/SpatialBookEntityTests.swift` — 7 tests (already covered all Task 9 subtasks)
+
+### Implementation
+- Created `SpatialControlBarAutoHideTests.swift` with extracted `AutoHideStateMachine` model that mirrors the `SpatialControlBar` view logic
+- Test files are standalone Swift scripts (not in Xcode project) — consistent with existing pattern
+- Both visionOS and iOS targets build clean, all 40 tests pass
+
+### Next Task
+- Task 10: Simulator Build Verification & Final Polish

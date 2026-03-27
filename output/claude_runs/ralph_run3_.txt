@@ -1,0 +1,21 @@
+## Loop Summary
+
+**Task**: Task 8 — End-to-End Navigation Flow & Edge Cases
+**Status**: Completed
+
+### Tests Written
+- No new tests needed — existing `SpatialNavigationStateTests.swift` (18 tests) and `SpatialBookEntityTests.swift` (7 tests) all pass
+
+### Implementation
+- **External dismissal fix** (`SpatialReaderView.swift`): `.onDisappear` now calls `navState.closeReader()` instead of just `navState.isImmersiveSpaceOpen = false` — fixes Digital Crown / system preemption leaving `isReaderOpen = true` which blocked re-selection
+- **Double-open guard** (`SpeedReadingVisionApp.swift`): `guard !navState.isImmersiveSpaceOpen` prevents duplicate `openImmersiveSpace` calls
+- **Reader window cleanup** (`SpeedReadingVisionApp.swift`): `dismissWindow(id: "reader")` on close to clean up settings/search/TOC windows
+- **Library refresh** (`SpatialLibraryView.swift`): `onChange(of: navState.isReaderOpen)` reloads library when reader closes, showing updated reading progress
+- **Book deletion safety** (`SpatialLibraryView.swift`): Checks if deleted books include the currently-open book and calls `closeReader()` if so
+- Files: `SpeedReadingVisionApp.swift`, `SpatialReaderView.swift`, `SpatialLibraryView.swift`, `IMPLEMENTATION_PLAN.md`
+
+### Next Task
+- Task 9: Unit Tests for Phase 1B Components
+
+### Blockers
+- None

@@ -1,0 +1,26 @@
+Committed. The GPG signing needed sandbox bypass since it requires access to `~/.gnupg`. You can use `/sandbox` to manage restrictions if needed.
+
+## Loop Summary
+
+**Task**: Task 7: SpatialReaderView — Immersive Space Assembly
+**Status**: Completed
+
+### Implementation
+- Replaced placeholder `SpatialReaderView` with full immersive space reader
+- `RealityView` with two `Attachment`s:
+  - `SpatialORPView` at `[0, 0, -2.0]` (2m forward, head-anchored)
+  - `SpatialControlBar` at `[0, -0.3, -2.0]` (0.3m below ORP word)
+- Both attachments have `BillboardComponent` to always face the user
+- Head anchoring via `AnchoringComponent(.head, trackingMode: .continuous)` — no ARKit auth needed
+- Loading, error, and completion overlay states
+- Menu access opens windowed reader via `openWindow(id: "reader")`
+- Scene phase handling auto-pauses on background/inactive
+- Progress saved on disappear (Digital Crown, safety boundary, system preemption)
+- Files: `SpatialReaderView.swift`, `IMPLEMENTATION_PLAN.md`
+
+### Build Verification
+- visionOS simulator: **passed**
+- iOS simulator: **passed** (no regressions)
+
+### Next Task
+- **Task 8: End-to-End Navigation Flow & Edge Cases** — wires up the complete library → immersive reader → library flow and handles edge cases

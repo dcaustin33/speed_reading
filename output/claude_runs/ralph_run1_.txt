@@ -1,0 +1,23 @@
+Commit succeeded. The GPG signing needed sandbox bypass — you can use `/sandbox` to manage restrictions if needed.
+
+## Loop Summary
+
+**Task**: Task 6 — SpatialControlBar — Immersive Playback Controls
+**Status**: Completed
+
+### Implementation
+- Created `SpatialControlBar.swift` with two rows:
+  - **Row 1**: Playback buttons (prev paragraph, prev sentence, play/pause, next sentence, next paragraph, menu) using existing `TooltipButton`
+  - **Row 2**: `ProgressBarView` with full scrub support + `StatsBarView` (WPM, time remaining, %, chapter time)
+- Auto-hide state machine ported from `ReaderView`: 3s hide timer on play, cancel+show on pause/completion, pause during scrub
+- Glass background via `.glassBackgroundEffect()`
+- Added to visionOS target in `project.pbxproj`
+- **Both visionOS and iOS builds pass clean**
+
+### Files Changed
+- `SpeedReading/Features/VisionOS/SpatialControlBar.swift` (new)
+- `SpeedReading.xcodeproj/project.pbxproj`
+- `IMPLEMENTATION_PLAN.md`
+
+### Next Task
+- **Task 7: SpatialReaderView — Immersive Space Assembly** — assembles ORP word + control bar as RealityView attachments in the immersive space
