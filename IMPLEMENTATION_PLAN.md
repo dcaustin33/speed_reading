@@ -148,7 +148,12 @@
 
 ---
 
-- [ ] **Task 6: SpatialControlBar — Immersive Playback Controls**
+- [x] **Task 6: SpatialControlBar — Immersive Playback Controls**
+  - ✅ Completed: 2026-03-27
+  - Tests: No new business logic to test — reuses existing `ProgressBarView`, `StatsBarView`, and auto-hide state machine pattern from `ReaderView`. Build verification passed on both visionOS and iOS simulators.
+  - Implementation: Created `SpatialControlBar` with two rows: Row 1 ports the `TooltipButton` HStack from `ReaderView.readerOrnament` (prev paragraph, prev sentence, play/pause, next sentence, next paragraph, menu). Row 2 adds `ProgressBarView` with scrubbing support and `StatsBarView` (WPM, time remaining, percentage, chapter time). Auto-hide state machine identical to `ReaderView`: 3s timer on play, cancel+show on pause/completion, pause timer during scrub. Glass background via `.glassBackgroundEffect()`. Menu button closure for opening windowed settings.
+  - Notes: Uses `@State var viewModel: ReaderViewModel` consistent with `SpatialORPView` pattern. Reuses all existing components (`ProgressBarView`, `StatsBarView`, `TooltipButton`) — no new UI components created.
+  - Files changed: `SpatialControlBar.swift` (new), `project.pbxproj`
 
   Port the existing ornament control bar from `ReaderView` to a standalone view for use as a `RealityView` `Attachment` in the immersive space. Adds progress bar and stats that the current ornament lacks.
 
