@@ -10,7 +10,6 @@ struct SpeedReadingVisionApp: App {
         WindowGroup {
             LibraryCoordinatorView()
                 .environment(navState)
-                .environmentObject(NavigationRouter())
                 .frame(width: 900, height: 600)
                 .glassBackgroundEffect()
         }
@@ -53,7 +52,7 @@ struct LibraryCoordinatorView: View {
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        ContentView()
+        SpatialLibraryView()
             .onChange(of: navState.isReaderOpen) { _, isOpen in
                 if isOpen {
                     Task {

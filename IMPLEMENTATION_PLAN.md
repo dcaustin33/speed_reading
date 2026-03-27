@@ -95,7 +95,12 @@
 
 ---
 
-- [ ] **Task 4: SpatialLibraryView — Volumetric 3D Bookshelf**
+- [x] **Task 4: SpatialLibraryView — Volumetric 3D Bookshelf**
+  - ✅ Completed: 2026-03-27
+  - Tests: Verified both visionOS and iOS simulator builds succeed with zero regressions
+  - Implementation: Created `SpatialLibraryView` with `RealityView` containing 3D `SpatialBookEntity` instances in centered rows (max 8 per row, 5cm spacing, 2-row support). Book selection via `SpatialTapGesture.targetedToAnyEntity()` with selection pulse animation. Title label `Attachment`s for fallback covers. Empty state with glass background. Bottom ornament with import button and `.fileImporter()`. Edit mode with scale-based selection feedback. Book appear animation on import. Replaced `ContentView()` with `SpatialLibraryView()` in `LibraryCoordinatorView`.
+  - Notes: `RealityView` `make:` adds shelfRoot; `.task(id:)` handles async entity creation/rebuild; `update:` syncs title label attachments. Cover images loaded as `UIImage` directly for `TextureResource` creation.
+  - Files changed: `SpatialLibraryView.swift` (new), `SpeedReadingVisionApp.swift`, `project.pbxproj`
 
   Build the 3D bookshelf library view inside a **plain window** (not volumetric — `.fileImporter()` requires plain window on visionOS 2.x). Books are arranged in a row using RealityKit entities inside a `RealityView`, with a bottom ornament for the import button.
 
