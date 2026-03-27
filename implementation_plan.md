@@ -83,7 +83,12 @@
   - Add ornament timing constants to `Theme.Animation`: `ornamentHideDelay: 3.0`, reuse existing `navigationOverlayFadeDuration: 0.3`
   - Verify iOS theme values are unchanged (all `#else` branches match current values exactly)
 
-- [ ] **Task 5: Adapt visionOS interaction states in shared views**
+- [x] **Task 5: Adapt visionOS interaction states in shared views**
+  - ✅ Completed: 2026-03-26
+  - Tests: iOS build succeeds (values unchanged in #else branches), visionOS Swift compilation succeeds (linker expects @main from Task 6)
+  - Implementation: Added `#if os(visionOS)` conditionals to LibraryView (loading overlay uses .glassBackgroundEffect(), no dark overlay; add button gets .hoverEffect), ReaderView (error view uses glass card, .buttonStyle(.bordered), system .red icon), CompletionOverlayView (glass card instead of fullscreen background, .buttonStyle(.borderedProminent)), BookCardView (.glassBackgroundEffect() and .hoverEffect(.highlight))
+  - Notes: No unit tests possible — pure compile-time UI conditionals. ReaderView loading view already correct via Theme changes from Task 4.
+  - Files changed: `LibraryView.swift`, `ReaderView.swift`, `CompletionOverlayView.swift`, `BookCardView.swift`
 
   Add `#if os(visionOS)` conditionals to views that use iOS-specific patterns (dark overlays, card backgrounds) so they use glass-compatible alternatives on visionOS. Per spec §6.9: never use `Color.black.opacity()` on glass.
 
