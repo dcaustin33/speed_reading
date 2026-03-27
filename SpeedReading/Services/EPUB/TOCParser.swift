@@ -61,26 +61,24 @@ enum NCXParser {
     }
 
     private static func parseNavPointsFlexible(_ content: String, entries: inout [TOCEntry], level: Int) {
-        // Find navLabel/text and content src pairs
-        let navPointPattern = "<navPoint[^>]*>([\\s\\S]*?)</navPoint>"
+        // Stack-based parser to correctly handle nested navPoints.
+        // The previous regex approach used non-greedy matching that broke on
+        // nested navPoints (parts containing chapters).
+        let navPointBodies = findTopLevelNavPointBodies(in: content)
 
-        guard let regex = try? NSRegularExpression(pattern: navPointPattern, options: []) else {
-            return
-        }
-
-        let matches = regex.matches(in: content, options: [], range: NSRange(content.startIndex..., in: content))
-
-        for match in matches {
-            guard let navPointRange = Range(match.range(at: 1), in: content) else {
-                continue
+        for body in navPointBodies {
+            // Extract title and href from content before any child navPoint
+            let directContent: String
+            if let childStart = body.range(of: "<navPoint") {
+                directContent = String(body[..<childStart.lowerBound])
+            } else {
+                directContent = body
             }
-
-            let navPointContent = String(content[navPointRange])
 
             // Extract title from <text> element
             var title: String?
-            if let textMatch = navPointContent.range(of: "<text>([^<]+)</text>", options: .regularExpression) {
-                let textContent = navPointContent[textMatch]
+            if let textMatch = directContent.range(of: "<text>([^<]+)</text>", options: .regularExpression) {
+                let textContent = directContent[textMatch]
                 if let start = textContent.range(of: ">")?.upperBound,
                    let end = textContent.range(of: "</")?.lowerBound {
                     title = String(textContent[start..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
@@ -89,8 +87,8 @@ enum NCXParser {
 
             // Extract href from <content src="..."/>
             var href: String?
-            if let srcMatch = navPointContent.range(of: "src=\"([^\"]+)\"", options: .regularExpression) {
-                let srcContent = navPointContent[srcMatch]
+            if let srcMatch = directContent.range(of: "src=\"([^\"]+)\"", options: .regularExpression) {
+                let srcContent = directContent[srcMatch]
                 if let start = srcContent.range(of: "\"")?.upperBound {
                     let remaining = srcContent[start...]
                     if let end = remaining.range(of: "\"")?.lowerBound {
@@ -106,7 +104,87 @@ enum NCXParser {
                 }
                 entries.append(TOCEntry(title: t, href: h, level: level))
             }
+
+            // Recursively parse child navPoints
+            parseNavPointsFlexible(body, entries: &entries, level: level + 1)
         }
+    }
+
+    /// Finds the inner content of each top-level <navPoint> element using
+    /// depth tracking to correctly match opening and closing tags when nested.
+    private static func findTopLevelNavPointBodies(in content: String) -> [String] {
+        var results: [String] = []
+        var searchFrom = content.startIndex
+        let openTag = "<navPoint"
+        let closeTag = "</navPoint"
+
+        while searchFrom < content.endIndex {
+            guard let openRange = content.range(of: openTag, range: searchFrom..<content.endIndex) else {
+                break
+            }
+
+            // Verify it's a real tag (next char must be whitespace or >)
+            if openRange.upperBound < content.endIndex {
+                let ch = content[openRange.upperBound]
+                guard ch == " " || ch == ">" || ch == "\t" || ch == "\n" || ch == "\r" else {
+                    searchFrom = openRange.upperBound
+                    continue
+                }
+            }
+
+            // Find the > that closes the opening tag
+            guard let tagEnd = content.range(of: ">", range: openRange.upperBound..<content.endIndex) else {
+                break
+            }
+
+            let innerStart = tagEnd.upperBound
+            var depth = 1
+            var scanPos = innerStart
+
+            while depth > 0, scanPos < content.endIndex {
+                guard let angleBracket = content.range(of: "<", range: scanPos..<content.endIndex) else {
+                    break
+                }
+
+                let afterAngle = content[angleBracket.lowerBound...]
+
+                if afterAngle.hasPrefix(closeTag) {
+                    depth -= 1
+                    if depth == 0 {
+                        results.append(String(content[innerStart..<angleBracket.lowerBound]))
+                        if let gt = content.range(of: ">", range: angleBracket.upperBound..<content.endIndex) {
+                            searchFrom = gt.upperBound
+                        } else {
+                            searchFrom = content.endIndex
+                        }
+                        break
+                    } else {
+                        if let gt = content.range(of: ">", range: angleBracket.upperBound..<content.endIndex) {
+                            scanPos = gt.upperBound
+                        } else {
+                            break
+                        }
+                    }
+                } else if afterAngle.hasPrefix(openTag) {
+                    let checkIdx = content.index(angleBracket.lowerBound, offsetBy: openTag.count, limitedBy: content.endIndex) ?? content.endIndex
+                    if checkIdx < content.endIndex {
+                        let ch = content[checkIdx]
+                        if ch == " " || ch == ">" || ch == "\t" || ch == "\n" || ch == "\r" {
+                            depth += 1
+                        }
+                    }
+                    scanPos = content.index(after: angleBracket.lowerBound)
+                } else {
+                    scanPos = content.index(after: angleBracket.lowerBound)
+                }
+            }
+
+            if depth > 0 {
+                break
+            }
+        }
+
+        return results
     }
 }
 
@@ -159,7 +237,8 @@ enum NAVParser {
 
     private static func parseOLEntries(_ content: String, entries: inout [TOCEntry], level: Int) {
         // Find <a href="...">title</a> patterns within the content
-        let anchorPattern = "<a[^>]+href=\"([^\"]+)\"[^>]*>([^<]+)</a>"
+        // Use [\s\S]*? to handle anchors with inner HTML like <span>Chapter 1</span>
+        let anchorPattern = "<a[^>]+href=\"([^\"]+)\"[^>]*>([\\s\\S]*?)</a>"
 
         guard let regex = try? NSRegularExpression(pattern: anchorPattern, options: []) else {
             return
@@ -174,7 +253,7 @@ enum NAVParser {
             }
 
             var href = String(content[hrefRange])
-            let title = String(content[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let title = stripInnerHTML(String(content[titleRange])).trimmingCharacters(in: .whitespacesAndNewlines)
 
             // Remove fragment identifier
             if let hashIndex = href.firstIndex(of: "#") {
@@ -187,9 +266,15 @@ enum NAVParser {
         }
     }
 
+    /// Strip HTML tags from a string, leaving only text content
+    private static func stripInnerHTML(_ html: String) -> String {
+        html.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+    }
+
     private static func parseAnchors(_ nav: String, entries: inout [TOCEntry]) {
         // Simple fallback: find all anchors with href
-        let anchorPattern = "<a[^>]+href=\"([^\"]+)\"[^>]*>([^<]+)</a>"
+        // Use [\s\S]*? to handle anchors with inner HTML like <span>Chapter 1</span>
+        let anchorPattern = "<a[^>]+href=\"([^\"]+)\"[^>]*>([\\s\\S]*?)</a>"
 
         guard let regex = try? NSRegularExpression(pattern: anchorPattern, options: []) else {
             return
@@ -204,7 +289,7 @@ enum NAVParser {
             }
 
             var href = String(nav[hrefRange])
-            let title = String(nav[titleRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let title = stripInnerHTML(String(nav[titleRange])).trimmingCharacters(in: .whitespacesAndNewlines)
 
             // Remove fragment identifier
             if let hashIndex = href.firstIndex(of: "#") {

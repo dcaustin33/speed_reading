@@ -353,18 +353,6 @@ func testORPDisplayViewAccessibility() {
     assertContains(wordHint, "position 4", "ORP hint should indicate highlight position (1-based)")
 }
 
-// MARK: - ChapterOverlayView Accessibility Tests
-
-func testChapterOverlayViewAccessibility() {
-    print("\n--- ChapterOverlayView Accessibility Tests ---\n")
-
-    // Test chapter overlay
-    let chapterTitle = "The Beginning"
-    let overlayLabel = "Chapter: \(chapterTitle)"
-    assertContains(overlayLabel, "Chapter", "Overlay should identify as chapter")
-    assertContains(overlayLabel, chapterTitle, "Overlay should include chapter title")
-}
-
 // MARK: - CompletionOverlayView Accessibility Tests
 
 func testCompletionOverlayViewAccessibility() {
@@ -394,7 +382,6 @@ func runAllTests() {
     testTOCViewAccessibility()
     testSettingsViewAccessibility()
     testORPDisplayViewAccessibility()
-    testChapterOverlayViewAccessibility()
     testCompletionOverlayViewAccessibility()
 
     // Print summary

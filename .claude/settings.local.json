@@ -52,7 +52,14 @@
         "Bash(mv *)",
         "Bash(xcodebuild*)",                                       
         "Bash(xcrun*)",                                            
-        "Bash(swift build*)"  
+        "Bash(swift build*)",
+        "mcp__XcodeBuildMCP__*",
+        "mcp__claude-in-chrome__*",
+        "mcp__CodeGraphContext__*",
+        "mcp__plugin_context7_context7__*",
+        "mcp__wandb__*",
+        "WebFetch(domain:api.anthropic.com)",
+        "Bash(git *)"
       ],
       "deny": [],
       "ask": []

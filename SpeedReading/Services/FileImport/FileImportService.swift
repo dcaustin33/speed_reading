@@ -113,9 +113,13 @@ enum FileImportService {
 
         // Try single-byte encodings before UTF-16
         // (UTF-16 can falsely decode random bytes as CJK characters)
+        // CP-1252 must come before ISO-8859-1: Latin1 maps every byte 0x00-0xFF
+        // so it always succeeds. CP-1252 correctly decodes smart quotes and
+        // em-dashes (0x80-0x9F) and fails only on 5 undefined bytes, falling
+        // through to Latin1.
         let singleByteEncodings: [String.Encoding] = [
-            .isoLatin1,
             .windowsCP1252,
+            .isoLatin1,
             .ascii
         ]
 

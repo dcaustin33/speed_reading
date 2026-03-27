@@ -26,12 +26,17 @@ struct ReaderView: View {
             } else {
                 readerContent
 
-                // Chapter transition overlay (per spec Section 3.7)
-                // Displayed on top of reader content, playback continues behind it
-                ChapterOverlayView(
-                    chapterTitle: viewModel.currentChapterTitle,
-                    isVisible: viewModel.isChapterOverlayVisible
-                )
+                // Paragraph preview overlay
+                if viewModel.isParagraphPreviewVisible {
+                    ParagraphOverlayView(
+                        paragraphText: viewModel.paragraphPreviewText,
+                        highlightWordIndex: viewModel.paragraphHighlightWordIndex,
+                        onDismiss: {
+                            viewModel.hideParagraphPreview()
+                        }
+                    )
+                    .animation(.easeInOut(duration: 0.2), value: viewModel.isParagraphPreviewVisible)
+                }
 
                 // Completion overlay (per spec Section 3.8)
                 // Only dismissal option is the "Return to Library" button
@@ -55,6 +60,11 @@ struct ReaderView: View {
         }
         .sheet(isPresented: $showMenu) {
             MenuView(bookId: bookId, showMenu: $showMenu, viewModel: viewModel)
+        }
+        .onChange(of: showMenu) { _, isShowing in
+            if !isShowing {
+                viewModel.reloadSettings()
+            }
         }
         .task {
             viewModel.loadBook()
@@ -183,6 +193,18 @@ struct ReaderView: View {
         HStack {
             Spacer()
 
+            // Paragraph preview button
+            Button {
+                viewModel.showParagraphPreview()
+            } label: {
+                Image(systemName: "text.justify.left")
+                    .font(.title2)
+                    .foregroundStyle(Theme.Colors.primaryText)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("Show full paragraph")
+            .accessibilityHint("Display the current paragraph in traditional reading format")
+
             // Navigation overlay toggle button
             Button {
                 viewModel.toggleNavigationOverlay()
@@ -246,7 +268,6 @@ struct ReaderView: View {
 
     private var backButton: some View {
         Button {
-            viewModel.onDisappear()
             router.pop()
         } label: {
             Image(systemName: "chevron.left")

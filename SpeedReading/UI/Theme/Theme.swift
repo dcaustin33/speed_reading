@@ -49,9 +49,6 @@ enum Theme {
     }
 
     enum Animation {
-        /// Chapter overlay display duration
-        static let chapterOverlayDuration: TimeInterval = 2.0
-
         /// Navigation overlay auto-hide duration
         static let navigationOverlayDuration: TimeInterval = 2.0
 

@@ -4,8 +4,10 @@ import Foundation
 enum TokenizerService {
     // Known abbreviations that don't end sentences
     private static let abbreviations: Set<String> = [
-        "dr.", "mr.", "mrs.", "ms.", "jr.", "sr.", "vs.",
-        "etc.", "inc.", "ltd.", "corp.", "co.",
+        "dr.", "mr.", "mrs.", "ms.", "jr.", "sr.", "prof.", "gen.", "vs.",
+        "etc.", "inc.", "ltd.", "corp.", "co.", "dept.",
+        "e.g.", "i.e.", "a.m.", "p.m.",
+        "u.s.", "u.k.",
         "st.", "ave.", "blvd.", "rd.", "apt.",
         "no.", "vol.", "pg.", "pp.", "fig.",
         "jan.", "feb.", "mar.", "apr.", "jun.", "jul.", "aug.", "sep.", "sept.", "oct.", "nov.", "dec.",
@@ -79,6 +81,28 @@ enum TokenizerService {
         }
 
         return Document(words: allWords, chapters: chapters)
+    }
+
+    /// Counts words using the same logic as tokenize() (including hyphen splitting).
+    static func countWords(in text: String) -> Int {
+        var normalized = text.replacingOccurrences(of: "\r\n", with: "\n")
+        normalized = normalized.replacingOccurrences(of: "\r", with: "\n")
+
+        let paragraphs = normalized.components(separatedBy: "\n\n")
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty }
+
+        var count = 0
+        for paragraph in paragraphs {
+            let rawTokens = paragraph
+                .components(separatedBy: .whitespacesAndNewlines)
+                .filter { !$0.isEmpty }
+
+            for token in rawTokens {
+                count += splitHyphenatedWord(token).count
+            }
+        }
+        return count
     }
 
     /// Finds the chapter index for a given word position.

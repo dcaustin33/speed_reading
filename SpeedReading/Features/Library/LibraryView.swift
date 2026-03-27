@@ -54,6 +54,9 @@ struct LibraryView: View {
         } message: {
             Text(viewModel.errorMessage ?? "An error occurred")
         }
+        .onAppear {
+            viewModel.loadLibrary()
+        }
         .alert("Delete Books", isPresented: $viewModel.showingDeleteConfirmation) {
             Button("Delete", role: .destructive) {
                 viewModel.deleteSelectedBooks()
@@ -101,9 +104,12 @@ struct LibraryView: View {
                         .onTapGesture {
                             handleBookTap(book)
                         }
-                        .onLongPressGesture {
-                            handleBookLongPress(book)
-                        }
+                        .simultaneousGesture(
+                            LongPressGesture(minimumDuration: 0.5)
+                                .onEnded { _ in
+                                    handleBookLongPress(book)
+                                }
+                        )
                     }
                 }
                 .padding(.horizontal, 16)

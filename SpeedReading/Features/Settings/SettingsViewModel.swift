@@ -11,17 +11,26 @@ class SettingsViewModel {
     private let libraryDataService: LibraryDataService
 
     // MARK: - State
+    // NOTE: Using private backing storage + computed properties because
+    // @Observable's withMutation wrapper re-enters on didSet self-assignment,
+    // causing infinite recursion / stack overflow.
 
+    private var _fontSize: Double = 28
     /// Font size for ORP display (24-96pt)
     var fontSize: Double {
-        didSet {
+        get { _fontSize }
+        set {
+            _fontSize = newValue
             saveFontSize()
         }
     }
 
+    private var _wordSkip: Double = 5
     /// Word skip amount for navigation buttons (1-20)
     var wordSkip: Double {
-        didSet {
+        get { _wordSkip }
+        set {
+            _wordSkip = newValue
             saveWordSkip()
         }
     }
@@ -47,9 +56,9 @@ class SettingsViewModel {
         // Load library to ensure we have current settings
         try? libraryDataService.loadLibrary()
 
-        // Load current settings
-        self.fontSize = Double(libraryDataService.settings.fontSize)
-        self.wordSkip = Double(libraryDataService.settings.wordSkip)
+        // Load current settings (use backing properties to avoid triggering save)
+        self._fontSize = Double(libraryDataService.settings.fontSize)
+        self._wordSkip = Double(libraryDataService.settings.wordSkip)
     }
 
     // MARK: - Persistence

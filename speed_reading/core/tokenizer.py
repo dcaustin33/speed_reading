@@ -6,10 +6,13 @@ from speed_reading.io.file_loader import Chapter
 
 # Common abbreviations that shouldn't end sentences
 ABBREVIATIONS = frozenset([
-    "mr", "mrs", "ms", "dr", "prof", "sr", "jr", "vs", "etc", "inc", "ltd",
-    "corp", "co", "st", "ave", "blvd", "rd", "apt", "no", "vol", "pg", "pp",
-    "fig", "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "oct",
-    "nov", "dec", "mon", "tue", "wed", "thu", "fri", "sat", "sun",
+    "mr", "mrs", "ms", "dr", "prof", "sr", "jr", "gen", "vs", "etc", "inc",
+    "ltd", "corp", "co", "dept",
+    "e.g", "i.e", "a.m", "p.m",
+    "u.s", "u.k",
+    "st", "ave", "blvd", "rd", "apt", "no", "vol", "pg", "pp",
+    "fig", "jan", "feb", "mar", "apr", "jun", "jul", "aug", "sep", "sept",
+    "oct", "nov", "dec", "mon", "tue", "wed", "thu", "fri", "sat", "sun",
 ])
 
 
