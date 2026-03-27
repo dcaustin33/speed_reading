@@ -68,7 +68,12 @@
 
 ## Phase 2: RealityKit Book Entities & Volumetric Library
 
-- [ ] **Task 3: SpatialBookEntity — RealityKit 3D Book Model**
+- [x] **Task 3: SpatialBookEntity — RealityKit 3D Book Model**
+  - ✅ Completed: 2026-03-27
+  - Tests: `tests/SpatialBookEntityTests.swift` (7 tests, all passing — deterministic color, palette bounds, edge cases)
+  - Implementation: Created `SpatialBookEntity` factory enum with `create(for:coverImage:)` async method. Box mesh (0.02×0.15×0.10m), cover image texture via `TextureResource(image:)`, deterministic djb2 fallback colors (8-color palette), interactive trio (InputTarget+Collision+Hover), custom `BookComponent` for tap identification, selection pulse and appear animations.
+  - Notes: Used `@MainActor` on entity creation/animation methods for Swift 6 concurrency. Used async `TextureResource(image:)` instead of deprecated `generate(from:)`.
+  - Files changed: `SpatialBookEntity.swift` (new), `SpatialBookEntityTests.swift` (new), `project.pbxproj`
 
   Create the RealityKit entity that represents a single book on the spatial bookshelf. Each book is a thin box with a cover image texture (or generated fallback) and input/hover components for look+pinch selection.
 
