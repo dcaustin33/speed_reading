@@ -10,10 +10,16 @@ struct ParagraphOverlayView: View {
     var body: some View {
         ZStack {
             // Dimmed background - tap to dismiss
+            #if os(visionOS)
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture { onDismiss() }
+            #else
             Color.black.opacity(0.7)
                 .ignoresSafeArea()
                 .contentShape(Rectangle())
                 .onTapGesture { onDismiss() }
+            #endif
 
             VStack(spacing: 0) {
                 // Dismiss button row
@@ -26,6 +32,9 @@ struct ParagraphOverlayView: View {
                             .font(.title2)
                             .foregroundStyle(Theme.Colors.secondaryText)
                     }
+                    #if os(visionOS)
+                    .hoverEffect(.highlight)
+                    #endif
                     .accessibilityLabel("Close paragraph preview")
                 }
                 .padding(.bottom, 12)
@@ -38,10 +47,14 @@ struct ParagraphOverlayView: View {
                 }
             }
             .padding(20)
+            #if os(visionOS)
+            .glassBackgroundEffect()
+            #else
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Theme.Colors.cardBackground)
             )
+            #endif
             .padding(.horizontal, 24)
             .padding(.top, 60)
             .padding(.bottom, 40)

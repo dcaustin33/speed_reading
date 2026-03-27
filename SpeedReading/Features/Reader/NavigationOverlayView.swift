@@ -75,11 +75,18 @@ struct NavigationOverlayView: View {
                 .font(.system(size: Theme.Navigation.buttonSize * 0.7))
                 .foregroundStyle(Theme.Colors.accent)
                 .frame(width: Theme.Navigation.buttonSize, height: Theme.Navigation.buttonSize)
+                #if os(visionOS)
+                .background(.regularMaterial, in: Circle())
+                #else
                 .background(
                     Circle()
                         .fill(Theme.Colors.cardBackground.opacity(0.9))
                 )
+                #endif
         }
+        #if os(visionOS)
+        .hoverEffect(.highlight)
+        #endif
         .accessibilityLabel(accessibilityLabel)
         .accessibilityHint(accessibilityHint)
     }

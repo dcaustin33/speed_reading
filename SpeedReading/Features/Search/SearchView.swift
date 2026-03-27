@@ -38,8 +38,10 @@ struct SearchView: View {
                 .foregroundStyle(Theme.Colors.accent)
             }
         }
+        #if !os(visionOS)
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        #endif
         .task {
             viewModel.loadDocument()
             isSearchFieldFocused = true

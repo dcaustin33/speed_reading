@@ -49,8 +49,10 @@ struct TOCView: View {
                 .accessibilityLabel("Back to menu")
             }
         }
+        #if !os(visionOS)
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        #endif
         .onAppear {
             if viewModel == nil {
                 let vm = TOCViewModel(bookId: bookId, currentWordIndex: currentWordIndex)

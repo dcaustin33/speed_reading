@@ -41,8 +41,10 @@ struct LibraryView: View {
         .toolbar {
             toolbarContent
         }
+        #if !os(visionOS)
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        #endif
         .safeAreaInset(edge: .bottom) {
             if viewModel.isEditing {
                 editModeToolbar
