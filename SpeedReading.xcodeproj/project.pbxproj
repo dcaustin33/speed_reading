@@ -56,6 +56,53 @@
 		E81000002B5F1A0000001500 /* TOCViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001500 /* TOCViewModel.swift */; };
 		E81000002B5F1A0000001600 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001600 /* SettingsViewModel.swift */; };
 		E81000002B5F1A0000001700 /* LayoutHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000001700 /* LayoutHelper.swift */; };
+		E8A000002B5F1A000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000002 /* ContentView.swift */; };
+		E8A000002B5F1A000000000004 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000004 /* Theme.swift */; };
+		E8A000002B5F1A000000000005 /* NavigationRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000005 /* NavigationRouter.swift */; };
+		E8A000002B5F1A000000000006 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000006 /* LibraryView.swift */; };
+		E8A000002B5F1A000000000007 /* ReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000007 /* ReaderView.swift */; };
+		E8A000002B5F1A000000000008 /* MenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000008 /* MenuView.swift */; };
+		E8A000002B5F1A000000000009 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000009 /* SearchView.swift */; };
+		E8A000002B5F1A000000000010 /* TOCView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000010 /* TOCView.swift */; };
+		E8A000002B5F1A000000000011 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000011 /* SettingsView.swift */; };
+		E8A000002B5F1A000000000100 /* Book.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000100 /* Book.swift */; };
+		E8A000002B5F1A000000000101 /* Chapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000101 /* Chapter.swift */; };
+		E8A000002B5F1A000000000102 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000102 /* Document.swift */; };
+		E8A000002B5F1A000000000103 /* FileType.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000103 /* FileType.swift */; };
+		E8A000002B5F1A000000000104 /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000104 /* Library.swift */; };
+		E8A000002B5F1A000000000105 /* SearchResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000105 /* SearchResult.swift */; };
+		E8A000002B5F1A000000000106 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000106 /* Settings.swift */; };
+		E8A000002B5F1A000000000107 /* SortOrder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000107 /* SortOrder.swift */; };
+		E8A000002B5F1A000000000108 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000108 /* Word.swift */; };
+		E8A000002B5F1A000000000200 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000200 /* StorageService.swift */; };
+		E8A000002B5F1A000000000300 /* ORPCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000300 /* ORPCalculator.swift */; };
+		E8A000002B5F1A000000000301 /* TokenizerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000301 /* TokenizerService.swift */; };
+		E8A000002B5F1A000000000400 /* FileImportError.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000400 /* FileImportError.swift */; };
+		E8A000002B5F1A000000000401 /* MarkdownStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000401 /* MarkdownStripper.swift */; };
+		E8A000002B5F1A000000000402 /* FileImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000402 /* FileImportService.swift */; };
+		E8A000002B5F1A000000000500 /* HTMLStripper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000500 /* HTMLStripper.swift */; };
+		E8A000002B5F1A000000000501 /* DRMDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000501 /* DRMDetector.swift */; };
+		E8A000002B5F1A000000000502 /* OPFParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000502 /* OPFParser.swift */; };
+		E8A000002B5F1A000000000503 /* TOCParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000503 /* TOCParser.swift */; };
+		E8A000002B5F1A000000000504 /* EPUBImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000504 /* EPUBImportService.swift */; };
+		E8A000002B5F1A000000000600 /* LibraryDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000600 /* LibraryDataService.swift */; };
+		E8A000002B5F1A000000000700 /* BookCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000700 /* BookCardView.swift */; };
+		E8A000002B5F1A000000000701 /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000701 /* LibraryViewModel.swift */; };
+		E8A000002B5F1A000000000800 /* ORPDisplayLogic.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000800 /* ORPDisplayLogic.swift */; };
+		E8A000002B5F1A000000000801 /* ORPDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000801 /* ORPDisplayView.swift */; };
+		E8A000002B5F1A000000000900 /* PlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000000900 /* PlaybackEngine.swift */; };
+		E8A000002B5F1A000000001000 /* ReaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001000 /* ReaderViewModel.swift */; };
+		E8A000002B5F1A000000001001 /* ProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001001 /* ProgressBarView.swift */; };
+		E8A000002B5F1A000000001002 /* StatsBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001002 /* StatsBarView.swift */; };
+		E8A000002B5F1A000000001201 /* CompletionOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001201 /* CompletionOverlayView.swift */; };
+		E8A000002B5F1A000000001202 /* NavigationOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001202 /* NavigationOverlayView.swift */; };
+		E8A000002B5F1A000000001203 /* ParagraphOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001203 /* ParagraphOverlayView.swift */; };
+		E8A000002B5F1A000000001400 /* SearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001400 /* SearchService.swift */; };
+		E8A000002B5F1A000000001401 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001401 /* SearchViewModel.swift */; };
+		E8A000002B5F1A000000001500 /* TOCViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001500 /* TOCViewModel.swift */; };
+		E8A000002B5F1A000000001600 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001600 /* SettingsViewModel.swift */; };
+		E8A000002B5F1A000000001700 /* LayoutHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A000000001700 /* LayoutHelper.swift */; };
+		E8A000002B5F1A0000000003 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000000003 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -109,10 +156,18 @@
 		E81000012B5F1A0000001500 /* TOCViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TOCViewModel.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001600 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000001700 /* LayoutHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutHelper.swift; sourceTree = "<group>"; };
+		E80000002B5F1A0000000002 /* SpeedReading visionOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SpeedReading visionOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E82000002B5F1A0000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E82000002B5F1A0000000002 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -374,6 +429,7 @@
 			isa = PBXGroup;
 			children = (
 				E80000002B5F1A0000000001 /* SpeedReading.app */,
+				E80000002B5F1A0000000002 /* SpeedReading visionOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -398,6 +454,23 @@
 			productReference = E80000002B5F1A0000000001 /* SpeedReading.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E84000002B5F1A0000000002 /* SpeedReading visionOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E85000002B5F1A0000000003 /* Build configuration list for PBXNativeTarget "SpeedReading visionOS" */;
+			buildPhases = (
+				E84100002B5F1A0000000002 /* Sources */,
+				E82000002B5F1A0000000002 /* Frameworks */,
+				E84200002B5F1A0000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "SpeedReading visionOS";
+			productName = "SpeedReading visionOS";
+			productReference = E80000002B5F1A0000000002 /* SpeedReading visionOS.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -410,6 +483,9 @@
 				TargetAttributes = {
 					E84000002B5F1A0000000001 = {
 						CreatedOnToolsVersion = 15.2;
+					};
+					E84000002B5F1A0000000002 = {
+						CreatedOnToolsVersion = 16.3;
 					};
 				};
 			};
@@ -427,6 +503,7 @@
 			projectRoot = "";
 			targets = (
 				E84000002B5F1A0000000001 /* SpeedReading */,
+				E84000002B5F1A0000000002 /* SpeedReading visionOS */,
 			);
 		};
 /* End PBXProject section */
@@ -437,6 +514,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				E81000002B5F1A0000000003 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E84200002B5F1A0000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E8A000002B5F1A0000000003 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -495,6 +580,59 @@
 				E81000002B5F1A0000001500 /* TOCViewModel.swift in Sources */,
 				E81000002B5F1A0000001600 /* SettingsViewModel.swift in Sources */,
 				E81000002B5F1A0000001700 /* LayoutHelper.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E84100002B5F1A0000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E8A000002B5F1A000000000002 /* ContentView.swift in Sources */,
+				E8A000002B5F1A000000000004 /* Theme.swift in Sources */,
+				E8A000002B5F1A000000000005 /* NavigationRouter.swift in Sources */,
+				E8A000002B5F1A000000000006 /* LibraryView.swift in Sources */,
+				E8A000002B5F1A000000000007 /* ReaderView.swift in Sources */,
+				E8A000002B5F1A000000000008 /* MenuView.swift in Sources */,
+				E8A000002B5F1A000000000009 /* SearchView.swift in Sources */,
+				E8A000002B5F1A000000000010 /* TOCView.swift in Sources */,
+				E8A000002B5F1A000000000011 /* SettingsView.swift in Sources */,
+				E8A000002B5F1A000000000100 /* Book.swift in Sources */,
+				E8A000002B5F1A000000000101 /* Chapter.swift in Sources */,
+				E8A000002B5F1A000000000102 /* Document.swift in Sources */,
+				E8A000002B5F1A000000000103 /* FileType.swift in Sources */,
+				E8A000002B5F1A000000000104 /* Library.swift in Sources */,
+				E8A000002B5F1A000000000105 /* SearchResult.swift in Sources */,
+				E8A000002B5F1A000000000106 /* Settings.swift in Sources */,
+				E8A000002B5F1A000000000107 /* SortOrder.swift in Sources */,
+				E8A000002B5F1A000000000108 /* Word.swift in Sources */,
+				E8A000002B5F1A000000000200 /* StorageService.swift in Sources */,
+				E8A000002B5F1A000000000300 /* ORPCalculator.swift in Sources */,
+				E8A000002B5F1A000000000301 /* TokenizerService.swift in Sources */,
+				E8A000002B5F1A000000000400 /* FileImportError.swift in Sources */,
+				E8A000002B5F1A000000000401 /* MarkdownStripper.swift in Sources */,
+				E8A000002B5F1A000000000402 /* FileImportService.swift in Sources */,
+				E8A000002B5F1A000000000500 /* HTMLStripper.swift in Sources */,
+				E8A000002B5F1A000000000501 /* DRMDetector.swift in Sources */,
+				E8A000002B5F1A000000000502 /* OPFParser.swift in Sources */,
+				E8A000002B5F1A000000000503 /* TOCParser.swift in Sources */,
+				E8A000002B5F1A000000000504 /* EPUBImportService.swift in Sources */,
+				E8A000002B5F1A000000000600 /* LibraryDataService.swift in Sources */,
+				E8A000002B5F1A000000000700 /* BookCardView.swift in Sources */,
+				E8A000002B5F1A000000000701 /* LibraryViewModel.swift in Sources */,
+				E8A000002B5F1A000000000800 /* ORPDisplayLogic.swift in Sources */,
+				E8A000002B5F1A000000000801 /* ORPDisplayView.swift in Sources */,
+				E8A000002B5F1A000000000900 /* PlaybackEngine.swift in Sources */,
+				E8A000002B5F1A000000001000 /* ReaderViewModel.swift in Sources */,
+				E8A000002B5F1A000000001001 /* ProgressBarView.swift in Sources */,
+				E8A000002B5F1A000000001002 /* StatsBarView.swift in Sources */,
+				E8A000002B5F1A000000001201 /* CompletionOverlayView.swift in Sources */,
+				E8A000002B5F1A000000001202 /* NavigationOverlayView.swift in Sources */,
+				E8A000002B5F1A000000001203 /* ParagraphOverlayView.swift in Sources */,
+				E8A000002B5F1A000000001400 /* SearchService.swift in Sources */,
+				E8A000002B5F1A000000001401 /* SearchViewModel.swift in Sources */,
+				E8A000002B5F1A000000001500 /* TOCViewModel.swift in Sources */,
+				E8A000002B5F1A000000001600 /* SettingsViewModel.swift in Sources */,
+				E8A000002B5F1A000000001700 /* LayoutHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -688,6 +826,66 @@
 			};
 			name = Release;
 		};
+		E87000002B5F1A0000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4HBS7WQM2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Speed Reading";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.speedreading.visionos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = xros;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Debug;
+		};
+		E87000002B5F1A0000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4HBS7WQM2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Speed Reading";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.speedreading.visionos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = xros;
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -705,6 +903,15 @@
 			buildConfigurations = (
 				E87000002B5F1A0000000001 /* Debug */,
 				E87000002B5F1A0000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E85000002B5F1A0000000003 /* Build configuration list for PBXNativeTarget "SpeedReading visionOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E87000002B5F1A0000000005 /* Debug */,
+				E87000002B5F1A0000000006 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
