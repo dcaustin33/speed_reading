@@ -181,7 +181,12 @@
 
 ## Phase 4: Immersive Space Integration
 
-- [ ] **Task 7: SpatialReaderView — Immersive Space Assembly**
+- [x] **Task 7: SpatialReaderView — Immersive Space Assembly**
+  - ✅ Completed: 2026-03-27
+  - Tests: No new business logic to test — reuses existing `ReaderViewModel`, `SpatialORPView`, `SpatialControlBar`, and `CompletionOverlayView`. Build verification passed on both visionOS and iOS simulators.
+  - Implementation: Replaced placeholder with full `SpatialReaderView` using `RealityView` with two `Attachment`s: `SpatialORPView` (id: "orpDisplay") at `[0, 0, -2.0]` and `SpatialControlBar` (id: "controlBar") at `[0, -0.3, -2.0]`, both with `BillboardComponent` on a head-anchored entity via `AnchoringComponent(.head, trackingMode: .continuous)`. Handles loading/error/completion states, menu access via `openWindow(id: "reader")`, scene phase auto-pause, and progress save on disappear.
+  - Notes: Uses `@State private var viewModel: ReaderViewModel?` with lazy initialization in `.task` from `navState.selectedBookId`. No ARKit authorization needed for head anchoring.
+  - Files changed: `SpatialReaderView.swift`
 
   Build the main immersive space view that assembles the ORP word and control bar as `RealityView` attachments, positions them in 3D space in front of the user, and handles the full reading lifecycle.
 
