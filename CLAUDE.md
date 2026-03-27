@@ -15,6 +15,7 @@ When reading, the eye doesn't scan every letter—it fixates on a specific point
 | Platform | Technology | Status |
 |----------|------------|--------|
 | iOS/iPadOS | SwiftUI, Swift 6 | Full-featured |
+| visionOS | SwiftUI + RealityKit, Swift 6 | Phase 1B — Spatial/Immersive |
 | Desktop | Python 3.13+, Tkinter | Full-featured |
 
 ---
@@ -160,9 +161,16 @@ SpeedReading/
 │   ├── Search/
 │   │   ├── SearchView.swift         # Search interface
 │   │   └── SearchViewModel.swift
-│   └── Settings/
-│       ├── SettingsView.swift       # Preferences UI
-│       └── SettingsViewModel.swift
+│   ├── Settings/
+│   │   ├── SettingsView.swift       # Preferences UI
+│   │   └── SettingsViewModel.swift
+│   └── VisionOS/                    # visionOS spatial/immersive (Phase 1B)
+│       ├── SpatialNavigationState.swift  # Immersive space lifecycle state machine
+│       ├── SpatialLibraryView.swift      # 3D bookshelf with RealityKit entities
+│       ├── SpatialBookEntity.swift       # RealityKit 3D book model with covers
+│       ├── SpatialReaderView.swift       # Immersive space assembly (head-anchored)
+│       ├── SpatialORPView.swift          # Floating ORP word display (attachment)
+│       └── SpatialControlBar.swift       # Immersive playback controls (attachment)
 │
 └── UI/
     ├── Theme/
@@ -315,6 +323,53 @@ container.xml → OPF path → metadata + spine → content documents → plain 
   }
 }
 ```
+
+---
+
+## visionOS Spatial Experience (Phase 1B)
+
+### Scene Structure
+
+```
+SpeedReadingVisionApp
+├── WindowGroup(id: "library")           # PLAIN window (needed for .fileImporter)
+│   └── LibraryCoordinatorView           # Wires openImmersiveSpace/dismissImmersiveSpace
+│       └── SpatialLibraryView           # RealityView with 3D SpatialBookEntity instances
+│
+├── ImmersiveSpace(id: "immersiveReader") # .mixed immersion — user's room visible
+│   └── SpatialReaderView               # Head-anchored RealityView with attachments:
+│       ├── SpatialORPView              # Floating ORP word at [0, 0, -2.0]m
+│       └── SpatialControlBar           # Controls at [0, -0.3, -2.0]m
+│
+└── WindowGroup(id: "reader")            # Fallback windowed reader (settings/search/TOC)
+```
+
+### Key Design Decisions
+
+- **Plain window for library** — visionOS 2.x volumetric windows cannot present `.fileImporter()`, sheets, or alerts. `RealityView` embedded in a plain window gives 3D rendering with full UIKit presentation support.
+- **Head-anchored attachments** — `AnchoringComponent(.head, trackingMode: .continuous)` with `BillboardComponent()` keeps the ORP word and controls facing the user. No ARKit authorization required.
+- **Mixed immersion** — `.mixed` mode keeps the user's room visible, creating a "teleprompter in space" effect.
+- **Only one ImmersiveSpace** can be open system-wide — `openImmersiveSpace` returns `.error` if another app's space is active.
+
+### Navigation Flow
+
+```
+Library (plain window) → tap book → openImmersiveSpace("immersiveReader")
+  → .opened: immersive reading
+  → .userCancelled: no-op
+  → .error: fallback to windowed reader
+
+Immersive reader → closeReader() → dismissImmersiveSpace() → back to library
+  Also triggered by: Digital Crown, system preemption, app backgrounding
+```
+
+### Theme.Spatial Constants
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `fontSize` | 72pt | Monospaced ORP text size |
+| `viewingDistance` | 2.0m | Distance from head to ORP display |
+| `controlBarOffset` | -0.3m | Below ORP word |
 
 ---
 
@@ -506,4 +561,4 @@ Available skills: `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/pla
 
 ---
 
-*Last updated: f1d4ecf6a4299fd407960d8234fd6ee2120028d3*
+*Last updated: 67dfaf216b90c82221ebb92450d90bee842f9f6b*

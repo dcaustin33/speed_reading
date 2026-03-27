@@ -286,18 +286,17 @@
 
 ---
 
-- [ ] **Task 10: Simulator Build Verification & Final Polish**
-
-  Final build verification on real visionOS simulator, fix any remaining issues, and confirm both platforms are clean.
-
-  **Subtasks:**
-  - Build visionOS target on Apple Vision Pro simulator (xrOS 26.x): `xcodebuild build -project SpeedReading.xcodeproj -scheme "SpeedReading visionOS" -destination 'platform=visionOS Simulator,name=Apple Vision Pro' CODE_SIGNING_ALLOWED=NO`
-  - Build iOS target on iPhone simulator: `xcodebuild build -project SpeedReading.xcodeproj -scheme SpeedReading -destination 'platform=iOS Simulator,name=iPhone 16' CODE_SIGNING_ALLOWED=NO`
-  - Run all tests on visionOS simulator: `xcodebuild test -project SpeedReading.xcodeproj -scheme "SpeedReading visionOS" -destination 'platform=visionOS Simulator,name=Apple Vision Pro'`
-  - Fix any compilation warnings or errors
-  - Verify no regressions in the iOS reading flow
-  - Optional: if the reading experience feels like it needs ambient progress awareness, implement `SpatialProgressRing.swift` (circular progress indicator around the ORP glass panel)
-  - Update `CLAUDE.md` with Phase 1B architecture documentation (new files, scene structure, navigation flow)
+- [x] **Task 10: Simulator Build Verification & Final Polish**
+  - ✅ Completed: 2026-03-27
+  - Tests: All 275 tests pass across 13 standalone Swift test files (0 failures)
+  - Implementation:
+    - visionOS build: ✅ SpeedReading visionOS scheme builds clean on Apple Vision Pro simulator
+    - iOS build: ✅ SpeedReading scheme builds clean on iPhone 16 simulator
+    - Tests: All 40 Phase 1B tests pass (18 navigation state + 7 book entity + 15 auto-hide), plus all 235 pre-existing tests
+    - No compilation warnings or errors on either platform
+    - Updated `CLAUDE.md` with Phase 1B architecture: visionOS platform entry, VisionOS feature files in project structure, scene structure, key design decisions, navigation flow, Theme.Spatial constants
+  - Notes: No test target configured in Xcode — tests are standalone Swift scripts. SpatialProgressRing (optional) not implemented as the core experience is complete without it.
+  - Files changed: `CLAUDE.md`
 
   **Files:** Multiple (build verification), `CLAUDE.md`
 
