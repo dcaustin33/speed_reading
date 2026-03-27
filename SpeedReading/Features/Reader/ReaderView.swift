@@ -4,6 +4,10 @@ import SwiftUI
 struct ReaderView: View {
     @EnvironmentObject var router: NavigationRouter
     @Environment(\.scenePhase) private var scenePhase
+    #if os(visionOS)
+    @Environment(SpatialNavigationState.self) private var spatialNavState
+    @Environment(\.dismissWindow) private var dismissWindow
+    #endif
     let bookId: UUID
 
     @State private var viewModel: ReaderViewModel
@@ -46,7 +50,12 @@ struct ReaderView: View {
                         isVisible: viewModel.isCompleted,
                         onDismiss: {
                             viewModel.dismissCompletion()
+                            #if os(visionOS)
+                            spatialNavState.closeReader()
+                            dismissWindow(id: "reader")
+                            #else
                             router.pop()
+                            #endif
                         }
                     )
                 }
@@ -112,7 +121,12 @@ struct ReaderView: View {
                 .padding(.horizontal)
 
             Button("Return to Library") {
+                #if os(visionOS)
+                spatialNavState.closeReader()
+                dismissWindow(id: "reader")
+                #else
                 router.pop()
+                #endif
             }
             #if os(visionOS)
             .buttonStyle(.bordered)
@@ -281,7 +295,12 @@ struct ReaderView: View {
 
     private var backButton: some View {
         Button {
+            #if os(visionOS)
+            spatialNavState.closeReader()
+            dismissWindow(id: "reader")
+            #else
             router.pop()
+            #endif
         } label: {
             Image(systemName: "chevron.left")
                 .foregroundStyle(Theme.Colors.primaryText)

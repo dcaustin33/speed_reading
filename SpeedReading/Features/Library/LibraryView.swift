@@ -4,6 +4,10 @@ import UniformTypeIdentifiers
 struct LibraryView: View {
     @EnvironmentObject var router: NavigationRouter
     @StateObject private var viewModel = LibraryViewModel()
+    #if os(visionOS)
+    @Environment(SpatialNavigationState.self) private var spatialNavState
+    @Environment(\.openWindow) private var openWindow
+    #endif
 
     var body: some View {
         ZStack {
@@ -248,7 +252,12 @@ struct LibraryView: View {
         if viewModel.isEditing {
             viewModel.toggleSelection(book.id)
         } else {
+            #if os(visionOS)
+            spatialNavState.selectBook(book.id)
+            openWindow(id: "reader")
+            #else
             router.navigateTo(.reader(bookId: book.id))
+            #endif
         }
     }
 
