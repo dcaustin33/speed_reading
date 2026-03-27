@@ -218,7 +218,19 @@
 
 ## Phase 5: Integration, Polish & Testing
 
-- [ ] **Task 8: End-to-End Navigation Flow & Edge Cases**
+- [x] **Task 8: End-to-End Navigation Flow & Edge Cases**
+  - ✅ Completed: 2026-03-27
+  - Tests: `tests/SpatialNavigationStateTests.swift` (18 tests), `tests/SpatialBookEntityTests.swift` (7 tests) — all passing, zero regressions
+  - Implementation:
+    - Fixed external immersive space dismissal (Digital Crown): `SpatialReaderView.onDisappear` now calls `navState.closeReader()` instead of just setting `isImmersiveSpaceOpen = false`, ensuring `isReaderOpen` resets properly for re-selection
+    - Added double-open guard in `LibraryCoordinatorView`: skips `openImmersiveSpace` if `isImmersiveSpaceOpen` is already true
+    - Added reader window cleanup: `dismissWindow(id: "reader")` called when closing reader to clean up windowed settings/search/TOC panels
+    - Added library refresh on return: `SpatialLibraryView` watches `navState.isReaderOpen` and reloads library when reader closes, showing updated reading progress
+    - Added book deletion safety: delete confirmation checks if deleted books include the currently-open book and calls `closeReader()` if so
+    - App backgrounding already handled: `SpatialReaderView` pauses and saves on `.inactive`/`.background` scenePhase changes
+    - All `openImmersiveSpace` result cases handled: `.opened`, `.userCancelled`, `.error` with windowed fallback
+  - Notes: Both iOS and visionOS targets build clean. All existing tests pass.
+  - Files changed: `SpeedReadingVisionApp.swift`, `SpatialReaderView.swift`, `SpatialLibraryView.swift`
 
   Wire up the complete library → immersive reader → library navigation flow and handle all edge cases. Ensure the volumetric library and immersive reader work together seamlessly.
 

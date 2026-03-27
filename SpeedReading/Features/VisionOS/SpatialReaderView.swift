@@ -46,7 +46,7 @@ struct SpatialReaderView: View {
         }
         .onDisappear {
             viewModel?.onDisappear()
-            navState.isImmersiveSpaceOpen = false
+            navState.closeReader()
         }
     }
 

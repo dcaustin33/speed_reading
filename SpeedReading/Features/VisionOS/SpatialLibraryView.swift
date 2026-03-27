@@ -57,12 +57,23 @@ struct SpatialLibraryView: View {
             Text(viewModel.errorMessage ?? "An error occurred")
         }
         .alert("Delete Books", isPresented: $viewModel.showingDeleteConfirmation) {
-            Button("Delete", role: .destructive) { viewModel.deleteSelectedBooks() }
+            Button("Delete", role: .destructive) {
+                let deletingOpenBook = spatialNavState.selectedBookId.map { viewModel.selectedBookIds.contains($0) } ?? false
+                viewModel.deleteSelectedBooks()
+                if deletingOpenBook {
+                    spatialNavState.closeReader()
+                }
+            }
             Button("Cancel", role: .cancel) { }
         } message: {
             Text("Are you sure you want to delete \(viewModel.selectedCount) book\(viewModel.selectedCount == 1 ? "" : "s")? This cannot be undone.")
         }
         .onAppear { viewModel.loadLibrary() }
+        .onChange(of: spatialNavState.isReaderOpen) { _, isOpen in
+            if !isOpen {
+                viewModel.loadLibrary()
+            }
+        }
         .task(id: viewModel.sortedBooks.map(\.id)) {
             await rebuildShelf()
         }

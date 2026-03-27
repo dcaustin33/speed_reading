@@ -50,11 +50,13 @@ struct LibraryCoordinatorView: View {
     @Environment(\.openImmersiveSpace) private var openImmersiveSpace
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
 
     var body: some View {
         SpatialLibraryView()
             .onChange(of: navState.isReaderOpen) { _, isOpen in
                 if isOpen {
+                    guard !navState.isImmersiveSpaceOpen else { return }
                     Task {
                         let result = await openImmersiveSpace(id: "immersiveReader")
                         switch result {
@@ -70,6 +72,7 @@ struct LibraryCoordinatorView: View {
                         }
                     }
                 } else {
+                    dismissWindow(id: "reader")
                     Task {
                         await dismissImmersiveSpace()
                     }
