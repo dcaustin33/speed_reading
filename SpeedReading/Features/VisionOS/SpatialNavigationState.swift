@@ -5,6 +5,8 @@ import SwiftUI
 final class SpatialNavigationState {
     var selectedBookId: UUID?
     var isReaderOpen: Bool = false
+    var isImmersiveSpaceOpen: Bool = false
+    var immersiveSpaceError: String?
 
     func selectBook(_ bookId: UUID) {
         selectedBookId = bookId
@@ -13,6 +15,17 @@ final class SpatialNavigationState {
 
     func closeReader() {
         isReaderOpen = false
+        isImmersiveSpaceOpen = false
         selectedBookId = nil
+    }
+
+    func immersiveSpaceOpened() {
+        isImmersiveSpaceOpen = true
+        immersiveSpaceError = nil
+    }
+
+    func immersiveSpaceFailed(_ error: String) {
+        immersiveSpaceError = error
+        isImmersiveSpaceOpen = false
     }
 }
