@@ -12,6 +12,10 @@ struct ReaderView: View {
 
     @State private var viewModel: ReaderViewModel
     @State private var showMenu = false
+    #if os(visionOS)
+    @State private var ornamentVisible: Bool = true
+    @State private var ornamentHideTask: Task<Void, Never>?
+    #endif
 
     init(bookId: UUID) {
         self.bookId = bookId
@@ -80,6 +84,9 @@ struct ReaderView: View {
         }
         .onDisappear {
             viewModel.onDisappear()
+            #if os(visionOS)
+            ornamentHideTask?.cancel()
+            #endif
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             handleScenePhaseChange(from: oldPhase, to: newPhase)
@@ -148,6 +155,9 @@ struct ReaderView: View {
     // MARK: - Reader Content
 
     private var readerContent: some View {
+        #if os(visionOS)
+        visionOSReaderContent
+        #else
         ZStack {
             VStack(spacing: 0) {
                 // Main content area - tap to toggle play/pause
@@ -177,7 +187,201 @@ struct ReaderView: View {
                 }
             )
         }
+        #endif
     }
+
+    // MARK: - visionOS Reader
+
+    #if os(visionOS)
+    private var visionOSReaderContent: some View {
+        ZStack {
+            // Word-only display area
+            GeometryReader { geometry in
+                ORPDisplayView(
+                    word: viewModel.currentWord,
+                    orpIndex: viewModel.currentOrpIndex,
+                    fontSize: CGFloat(viewModel.fontSize)
+                )
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                handleOrnamentInteraction()
+                viewModel.toggle()
+            }
+
+            // Navigation overlay (sentence/paragraph buttons)
+            NavigationOverlayView(
+                isVisible: viewModel.isNavigationOverlayVisible,
+                onPreviousSentence: { viewModel.previousSentence() },
+                onNextSentence: { viewModel.nextSentence() },
+                onPreviousParagraph: { viewModel.previousParagraph() },
+                onNextParagraph: { viewModel.nextParagraph() }
+            )
+        }
+        .ornament(attachmentAnchor: .scene(.bottom), contentAlignment: .center) {
+            readerOrnament
+        }
+        .onChange(of: viewModel.isPlaying) { _, isPlaying in
+            if isPlaying {
+                startOrnamentHideTimer()
+            } else {
+                cancelOrnamentHideTimer()
+                withAnimation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration)) {
+                    ornamentVisible = true
+                }
+            }
+        }
+        .onChange(of: viewModel.isCompleted) { _, isCompleted in
+            if isCompleted {
+                cancelOrnamentHideTimer()
+                withAnimation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration)) {
+                    ornamentVisible = true
+                }
+            }
+        }
+        .onChange(of: viewModel.isScrubbing) { _, isScrubbing in
+            if isScrubbing {
+                cancelOrnamentHideTimer()
+            } else if viewModel.isPlaying {
+                startOrnamentHideTimer()
+            }
+        }
+    }
+
+    private var readerOrnament: some View {
+        VStack(spacing: 8) {
+            // Control buttons row
+            HStack(spacing: 16) {
+                Button {
+                    handleOrnamentInteraction()
+                    viewModel.previousSentence()
+                } label: {
+                    Image(systemName: "backward.fill")
+                        .font(.title3)
+                }
+                .hoverEffect(.highlight)
+                .accessibilityLabel("Previous sentence")
+
+                Button {
+                    handleOrnamentInteraction()
+                    viewModel.toggle()
+                } label: {
+                    Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.title2)
+                        .frame(width: 44, height: 44)
+                }
+                .hoverEffect(.highlight)
+                .accessibilityLabel(viewModel.isPlaying ? "Pause" : "Play")
+
+                Button {
+                    handleOrnamentInteraction()
+                    viewModel.nextSentence()
+                } label: {
+                    Image(systemName: "forward.fill")
+                        .font(.title3)
+                }
+                .hoverEffect(.highlight)
+                .accessibilityLabel("Next sentence")
+
+                Divider().frame(height: 24)
+
+                Button {
+                    handleOrnamentInteraction()
+                    viewModel.showParagraphPreview()
+                } label: {
+                    Image(systemName: "text.justify.left")
+                        .font(.title3)
+                }
+                .hoverEffect(.highlight)
+                .accessibilityLabel("Show full paragraph")
+
+                Button {
+                    handleOrnamentInteraction()
+                    viewModel.toggleNavigationOverlay()
+                } label: {
+                    Image(systemName: "arrow.left.arrow.right")
+                        .font(.title3)
+                        .foregroundStyle(viewModel.isNavigationOverlayVisible ? Theme.Colors.accent : .primary)
+                }
+                .hoverEffect(.highlight)
+                .accessibilityLabel("Toggle navigation")
+
+                Button {
+                    handleOrnamentInteraction()
+                    viewModel.pause()
+                    showMenu = true
+                } label: {
+                    Image(systemName: "line.3.horizontal")
+                        .font(.title3)
+                }
+                .hoverEffect(.highlight)
+                .accessibilityLabel("Open menu")
+
+                Divider().frame(height: 24)
+
+                Text("\(viewModel.wpm) WPM")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            // Progress bar
+            ProgressBarView(
+                progress: viewModel.progress,
+                isScrubbing: viewModel.isScrubbing,
+                onScrubStart: {
+                    handleOrnamentInteraction()
+                    viewModel.startScrubbing()
+                },
+                onScrubChange: { position in
+                    viewModel.updateScrubPosition(position)
+                },
+                onScrubEnd: {
+                    viewModel.endScrubbing()
+                }
+            )
+
+            // Stats row
+            StatsBarView(
+                wpm: viewModel.wpm,
+                timeRemaining: viewModel.remainingTimeFormatted,
+                progressPercentage: viewModel.progressPercentage,
+                chapterTimeRemaining: viewModel.chapterRemainingTimeFormatted
+            )
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .frame(width: 500)
+        .glassBackgroundEffect()
+        .opacity(ornamentVisible ? 1 : 0)
+        .allowsHitTesting(ornamentVisible)
+        .animation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration), value: ornamentVisible)
+    }
+
+    private func handleOrnamentInteraction() {
+        withAnimation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration)) {
+            ornamentVisible = true
+        }
+        if viewModel.isPlaying {
+            startOrnamentHideTimer()
+        }
+    }
+
+    private func startOrnamentHideTimer() {
+        ornamentHideTask?.cancel()
+        ornamentHideTask = Task {
+            try? await Task.sleep(for: .seconds(Theme.Animation.ornamentHideDelay))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration)) {
+                ornamentVisible = false
+            }
+        }
+    }
+
+    private func cancelOrnamentHideTimer() {
+        ornamentHideTask?.cancel()
+        ornamentHideTask = nil
+    }
+    #endif
 
     // MARK: - Tap Area (ORP Display)
 
