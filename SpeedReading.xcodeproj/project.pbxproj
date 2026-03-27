@@ -111,6 +111,7 @@
 		E8A000002B5F1A000000004000 /* SpatialReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000004000 /* SpatialReaderView.swift */; };
 		E8A000002B5F1A000000005000 /* SpatialBookEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000005000 /* SpatialBookEntity.swift */; };
 		E8A000002B5F1A000000006000 /* SpatialLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000006000 /* SpatialLibraryView.swift */; };
+		E8A000002B5F1A000000007000 /* SpatialORPView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E81000012B5F1A0000007000 /* SpatialORPView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -171,6 +172,7 @@
 		E81000012B5F1A0000004000 /* SpatialReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialReaderView.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000005000 /* SpatialBookEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialBookEntity.swift; sourceTree = "<group>"; };
 		E81000012B5F1A0000006000 /* SpatialLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialLibraryView.swift; sourceTree = "<group>"; };
+		E81000012B5F1A0000007000 /* SpatialORPView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpatialORPView.swift; sourceTree = "<group>"; };
 		E80000002B5F1A0000000002 /* SpeedReading visionOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "SpeedReading visionOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -257,6 +259,7 @@
 				E81000012B5F1A0000004000 /* SpatialReaderView.swift */,
 				E81000012B5F1A0000005000 /* SpatialBookEntity.swift */,
 				E81000012B5F1A0000006000 /* SpatialLibraryView.swift */,
+				E81000012B5F1A0000007000 /* SpatialORPView.swift */,
 			);
 			path = VisionOS;
 			sourceTree = "<group>";
@@ -679,6 +682,7 @@
 				E8A000002B5F1A000000004000 /* SpatialReaderView.swift in Sources */,
 				E8A000002B5F1A000000005000 /* SpatialBookEntity.swift in Sources */,
 				E8A000002B5F1A000000006000 /* SpatialLibraryView.swift in Sources */,
+				E8A000002B5F1A000000007000 /* SpatialORPView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -125,7 +125,12 @@
 
 ## Phase 3: Immersive Reader Components
 
-- [ ] **Task 5: SpatialORPView — Floating ORP Word Display**
+- [x] **Task 5: SpatialORPView — Floating ORP Word Display**
+  - ✅ Completed: 2026-03-27
+  - Tests: No new business logic to test — reuses `ORPDisplayLogic.splitWord()` (already tested). Build verification passed on both visionOS and iOS simulators.
+  - Implementation: Created `SpatialORPView` with ORP-highlighted HStack (before white, ORP red, after white), 72pt monospaced font, `.glassBackgroundEffect()`, word crossfade animation via `.animation()` + `.id()`, tap gesture for play/pause toggle, accessibility labels.
+  - Notes: Uses `@State var viewModel: ReaderViewModel` consistent with pattern in `ReaderView`. Spec referenced `togglePlayback()` but actual API is `toggle()`.
+  - Files changed: `SpatialORPView.swift` (new), `project.pbxproj`
 
   Create the ORP word display as a SwiftUI view designed to be used as a `RealityView` `Attachment` in the immersive space. This is the core visual element — the word floating in the user's room.
 
