@@ -175,7 +175,12 @@
 
 ## Phase 5: Haptics & Platform Polish
 
-- [ ] **Task 9: Guard haptic feedback and finalize platform conditionals**
+- [x] **Task 9: Guard haptic feedback and finalize platform conditionals**
+  - ✅ Completed: 2026-03-26
+  - Tests: iOS build succeeds (XcodeBuildMCP), visionOS build succeeds (generic destination, full compile+link).
+  - Implementation: No haptic references found in app source (only in test files) — nothing to guard. Wrapped `.toolbarBackground` in `#if !os(visionOS)` in 4 views (TOCView, SearchView, LibraryView, SettingsView). Updated NavigationOverlayView buttons to use `.regularMaterial` circle background + `.hoverEffect(.highlight)` on visionOS (cardBackground is `.clear` on visionOS). Updated ParagraphOverlayView to use `.glassBackgroundEffect()` card and no dimmed overlay on visionOS. Added `.hoverEffect(.highlight)` to ParagraphOverlayView dismiss button on visionOS.
+  - Notes: `onSentenceChange` callback exists in PlaybackEngine but is never wired in ReaderViewModel — no haptic feedback active.
+  - Files changed: `TOCView.swift`, `SearchView.swift`, `LibraryView.swift`, `SettingsView.swift`, `NavigationOverlayView.swift`, `ParagraphOverlayView.swift`
 
   visionOS has no haptic motor. Guard any haptic feedback calls and finalize remaining platform-specific polish.
 
@@ -191,7 +196,12 @@
 
 ## Phase 6: Build Verification & Testing
 
-- [ ] **Task 10: Build both targets and fix compilation errors**
+- [x] **Task 10: Build both targets and fix compilation errors**
+  - ✅ Completed: 2026-03-26
+  - Tests: iOS build succeeded (XcodeBuildMCP, iPhone 16 Pro simulator), visionOS build succeeded (real simulator: Apple Vision Pro, xrOS 26.2)
+  - Implementation: No compilation errors found on either platform. Zero Swift warnings. All shared files compile cleanly on both targets.
+  - Notes: Both builds verified against real simulators (not generic destinations). No fixes needed — Tasks 1-9 left both targets in clean state.
+  - Files changed: none (verification-only task)
 
   Full build verification for both platforms. Fix any remaining compilation errors, missing target memberships, or platform availability issues.
 
