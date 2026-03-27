@@ -65,7 +65,12 @@
 
 ## Phase 2: Theme & Visual Adaptation
 
-- [ ] **Task 4: Add visionOS theme colors and layout constants**
+- [x] **Task 4: Add visionOS theme colors and layout constants**
+  - ✅ Completed: 2026-03-26
+  - Tests: iOS build succeeds (values unchanged in #else branches), visionOS Swift compilation succeeds
+  - Implementation: Added `#if os(visionOS)` conditionals to background (.clear), cardBackground (.clear), primaryText (.primary), secondaryText (.secondary), defaultFontSize (64). Added `ornamentHideDelay: 3.0` to Theme.Animation.
+  - Notes: visionOS linker error for `_main` is expected — entry point created in Task 6
+  - Files changed: `SpeedReading/UI/Theme/Theme.swift`
 
   Add `#if os(visionOS)` branches to `Theme.swift` so glass material shows through properly. On visionOS, backgrounds become `.clear`, text colors become system `.primary`/`.secondary`, and default font size increases for spatial viewing distance.
 
