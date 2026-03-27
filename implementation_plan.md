@@ -232,7 +232,12 @@
 
 ## Claude Added Tasks
 
-- [ ] **Task 12: Verify visionOS builds on real simulator (not generic destination)**
+- [x] **Task 12: Verify visionOS builds on real simulator (not generic destination)**
+  - ✅ Completed: 2026-03-26
+  - Tests: visionOS build succeeded (real simulator: Apple Vision Pro, xrOS 26.2, XRSimulator26.2.sdk), iOS build succeeded (XcodeBuildMCP, iPhone 16 Pro)
+  - Implementation: No compilation or linker errors on either platform. Both targets build cleanly against real simulators.
+  - Notes: CoreSimulatorService was intermittently crashing but recovered. Build verified full compile+link against real visionOS simulator (not generic destination).
+  - Files changed: none (verification-only task)
 
   All completed tasks (1–6) only verified visionOS compilation using `generic/platform=visionOS Simulator` (compile-only, no linking). The visionOS simulator runtime **is installed** (`Apple Vision Pro` — xrOS 26.2, UUID `C0BF3C1E-B1DC-4965-B228-77B68F0EAB22`). Run a full build against the real simulator to catch any linker or runtime issues missed by compile-only checks.
 
