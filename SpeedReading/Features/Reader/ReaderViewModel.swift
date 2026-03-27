@@ -174,6 +174,10 @@ class ReaderViewModel {
             }
         }
 
+        playbackEngine.onChapterChange = { [weak self] chapter in
+            self?.saveProgress()
+        }
+
         playbackEngine.onComplete = { [weak self] in
             self?.handleCompletion()
         }

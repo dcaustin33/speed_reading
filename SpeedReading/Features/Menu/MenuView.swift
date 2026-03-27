@@ -48,6 +48,162 @@ struct MenuView: View {
     }
 
     var body: some View {
+        #if os(visionOS)
+        visionOSMenuBody
+        #else
+        iOSMenuBody
+        #endif
+    }
+
+    // MARK: - visionOS Menu
+
+    #if os(visionOS)
+    private var visionOSMenuBody: some View {
+        ScrollView {
+            VStack(spacing: 32) {
+                // Done button
+                HStack {
+                    Spacer()
+                    Button("Done") {
+                        showMenu = false
+                    }
+                    .font(.body.weight(.medium))
+                    .buttonStyle(.plain)
+                }
+
+                // Playback section
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("Playback")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.primary)
+
+                    visionOSSlider(
+                        title: "WPM",
+                        value: wpm,
+                        range: 100...800,
+                        step: 25,
+                        valueLabel: "\(Int(wpm.wrappedValue))"
+                    )
+
+                    visionOSSlider(
+                        title: "Paragraph Pause",
+                        value: paragraphPause,
+                        range: 0.25...3.0,
+                        step: 0.25,
+                        valueLabel: formatPause(paragraphPause.wrappedValue)
+                    )
+                }
+                .padding(20)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+
+                // Navigation section
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Navigation")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, 20)
+                        .padding(.top, 20)
+                        .padding(.bottom, 12)
+
+                    visionOSMenuItem(icon: "magnifyingglass", title: "Search in Book") {
+                        showMenu = false
+                        router.navigateTo(.search(bookId: bookId))
+                    }
+
+                    if hasTOC {
+                        Divider().padding(.leading, 60)
+                        visionOSMenuItem(icon: "list.bullet", title: "Table of Contents") {
+                            showMenu = false
+                            router.navigateTo(.toc(bookId: bookId, currentWordIndex: currentWordIndex))
+                        }
+                    }
+
+                    Divider().padding(.leading, 60)
+                    visionOSMenuItem(icon: "text.justify.left", title: "Show Paragraph") {
+                        showMenu = false
+                        viewModel?.showParagraphPreview()
+                    }
+
+                    Divider().padding(.leading, 60)
+                    visionOSMenuItem(
+                        icon: "arrow.left.arrow.right",
+                        title: viewModel?.isNavigationOverlayVisible == true
+                            ? "Hide Navigation Overlay"
+                            : "Show Navigation Overlay"
+                    ) {
+                        viewModel?.toggleNavigationOverlay()
+                        showMenu = false
+                    }
+
+                    Divider().padding(.leading, 60)
+                    visionOSMenuItem(icon: "gearshape", title: "Settings") {
+                        showMenu = false
+                        router.navigateTo(.settings)
+                    }
+                }
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            }
+            .padding(24)
+        }
+        .presentationSizing(.fitted)
+        .presentationBackground(.regularMaterial)
+    }
+
+    private func visionOSSlider(
+        title: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        step: Double,
+        valueLabel: String
+    ) -> some View {
+        VStack(spacing: 10) {
+            HStack {
+                Text(title)
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(.primary)
+                Spacer()
+                Text(valueLabel)
+                    .font(.body.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+
+            Slider(value: value, in: range, step: step)
+                .tint(Theme.Colors.accent)
+                .accessibilityLabel(title)
+                .accessibilityValue(valueLabel)
+        }
+    }
+
+    private func visionOSMenuItem(icon: String, title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.body)
+                    .foregroundStyle(Theme.Colors.accent)
+                    .frame(width: 24)
+
+                Text(title)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+    #endif
+
+    // MARK: - iOS Menu
+
+    #if !os(visionOS)
+    private var iOSMenuBody: some View {
         ZStack {
             Theme.Colors.background.opacity(0.95)
                 .ignoresSafeArea()
@@ -128,7 +284,6 @@ struct MenuView: View {
                             router.navigateTo(.search(bookId: bookId))
                         }
 
-                        // TOC - only shown for EPUB with TOC
                         if hasTOC {
                             menuItem(icon: "list.bullet", title: "Table of Contents", hint: "Navigate to chapters") {
                                 showMenu = false
@@ -147,6 +302,7 @@ struct MenuView: View {
         }
         .presentationBackground(Theme.Colors.background.opacity(0.95))
     }
+    #endif
 
     private func navigationButton(symbol: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {

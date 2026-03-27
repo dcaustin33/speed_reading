@@ -19,7 +19,9 @@ struct ContentView: View {
                     }
                 }
         }
+        #if !os(visionOS)
         .tint(Theme.Colors.accent)
+        #endif
     }
 }
 

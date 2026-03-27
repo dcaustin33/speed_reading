@@ -1,8 +1,12 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct LibraryView: View {
     @EnvironmentObject var router: NavigationRouter
     @StateObject private var viewModel = LibraryViewModel()
+    #if os(visionOS)
+    @Environment(SpatialNavigationState.self) private var spatialNavState
+    #endif
 
     var body: some View {
         ZStack {
@@ -15,7 +19,8 @@ struct LibraryView: View {
                 libraryGridView
             }
 
-            // Floating action button
+            // Floating action button (iOS only)
+            #if !os(visionOS)
             VStack {
                 Spacer()
                 HStack {
@@ -25,6 +30,7 @@ struct LibraryView: View {
                         .padding(.bottom, viewModel.isEditing ? 80 : 24)
                 }
             }
+            #endif
 
             // Loading overlay
             if viewModel.isLoading {
@@ -32,21 +38,33 @@ struct LibraryView: View {
             }
         }
         .navigationTitle("Speed Reading")
+        #if os(visionOS)
+        .navigationBarTitleDisplayMode(.automatic)
+        #else
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .toolbar {
             toolbarContent
         }
+        #if !os(visionOS)
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        #endif
         .safeAreaInset(edge: .bottom) {
             if viewModel.isEditing {
                 editModeToolbar
             }
         }
-        .documentPicker(
+        .fileImporter(
             isPresented: $viewModel.showingDocumentPicker,
-            onSelect: { url in
-                viewModel.handleFileSelected(url)
+            allowedContentTypes: [.plainText, UTType(filenameExtension: "md") ?? .plainText, .epub],
+            onCompletion: { result in
+                switch result {
+                case .success(let url):
+                    viewModel.handleFileSelected(url)
+                case .failure:
+                    break
+                }
             }
         )
         .alert("Error", isPresented: $viewModel.showingError) {
@@ -112,9 +130,15 @@ struct LibraryView: View {
                         )
                     }
                 }
+                #if os(visionOS)
+                .padding(.horizontal, 32)
+                .padding(.top, 24)
+                .padding(.bottom, viewModel.isEditing ? 100 : 40)
+                #else
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
                 .padding(.bottom, viewModel.isEditing ? 100 : 80)
+                #endif
             }
         }
     }
@@ -133,12 +157,17 @@ struct LibraryView: View {
         }
         .accessibilityLabel("Import book")
         .accessibilityHint("Opens file picker to import a book from Files")
+        #if os(visionOS)
+        .hoverEffect(.highlight)
+        #endif
     }
 
     private var loadingOverlay: some View {
         ZStack {
+            #if !os(visionOS)
             Color.black.opacity(0.5)
                 .ignoresSafeArea()
+            #endif
 
             VStack(spacing: 16) {
                 ProgressView()
@@ -146,11 +175,19 @@ struct LibraryView: View {
                     .scaleEffect(1.5)
 
                 Text("Importing...")
+                    #if os(visionOS)
+                    .foregroundStyle(Theme.Colors.secondaryText)
+                    #else
                     .foregroundStyle(Theme.Colors.primaryText)
+                    #endif
             }
             .padding(32)
+            #if os(visionOS)
+            .glassBackgroundEffect()
+            #else
             .background(Theme.Colors.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 16))
+            #endif
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Importing book, please wait")
             .accessibilityAddTraits(.isStaticText)
@@ -186,17 +223,30 @@ struct LibraryView: View {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            if !viewModel.isEmpty {
-                Button(viewModel.isEditing ? "Done" : "Edit") {
-                    if viewModel.isEditing {
-                        viewModel.exitEditMode()
-                    } else {
-                        viewModel.enterEditMode()
-                    }
+            HStack(spacing: 12) {
+                #if os(visionOS)
+                Button {
+                    viewModel.showingDocumentPicker = true
+                } label: {
+                    Image(systemName: "plus")
                 }
-                .foregroundStyle(Theme.Colors.accent)
-                .accessibilityLabel(viewModel.isEditing ? "Done editing" : "Edit library")
-                .accessibilityHint(viewModel.isEditing ? "Exit edit mode" : "Enter edit mode to select and delete books")
+                .accessibilityLabel("Import book")
+                #endif
+
+                if !viewModel.isEmpty {
+                    Button(viewModel.isEditing ? "Done" : "Edit") {
+                        if viewModel.isEditing {
+                            viewModel.exitEditMode()
+                        } else {
+                            viewModel.enterEditMode()
+                        }
+                    }
+                    #if !os(visionOS)
+                    .foregroundStyle(Theme.Colors.accent)
+                    #endif
+                    .accessibilityLabel(viewModel.isEditing ? "Done editing" : "Edit library")
+                    .accessibilityHint(viewModel.isEditing ? "Exit edit mode" : "Enter edit mode to select and delete books")
+                }
             }
         }
     }
@@ -216,7 +266,9 @@ struct LibraryView: View {
             }
         } label: {
             Label("Sort", systemImage: "arrow.up.arrow.down")
+                #if !os(visionOS)
                 .foregroundStyle(Theme.Colors.accent)
+                #endif
         }
         .accessibilityLabel("Sort books")
         .accessibilityHint("Currently sorted by \(viewModel.sortOrder == .recent ? "recently opened" : "title")")
@@ -228,7 +280,11 @@ struct LibraryView: View {
         if viewModel.isEditing {
             viewModel.toggleSelection(book.id)
         } else {
+            #if os(visionOS)
+            spatialNavState.selectBook(book.id)
+            #else
             router.navigateTo(.reader(bookId: book.id))
+            #endif
         }
     }
 

@@ -94,8 +94,10 @@ struct SettingsView: View {
                 .accessibilityHint("Return to menu")
             }
         }
+        #if !os(visionOS)
         .toolbarBackground(Theme.Colors.background, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        #endif
     }
 }
 

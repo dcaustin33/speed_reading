@@ -16,9 +16,11 @@ struct CompletionOverlayView: View {
 
     var body: some View {
         ZStack {
+            #if !os(visionOS)
             // Full screen background
             Theme.Colors.background
                 .ignoresSafeArea()
+            #endif
 
             // Completion content centered
             VStack(spacing: 24) {
@@ -43,6 +45,14 @@ struct CompletionOverlayView: View {
                     .frame(height: 16)
 
                 // Return to Library button
+                #if os(visionOS)
+                Button("Return to Library") {
+                    onDismiss()
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityLabel("Return to Library")
+                .accessibilityHint("Tap to go back to your book library")
+                #else
                 Button {
                     onDismiss()
                 } label: {
@@ -56,8 +66,14 @@ struct CompletionOverlayView: View {
                 }
                 .accessibilityLabel("Return to Library")
                 .accessibilityHint("Tap to go back to your book library")
+                #endif
             }
+            #if os(visionOS)
+            .padding(40)
+            .glassBackgroundEffect()
+            #else
             .padding(.top, LayoutHelper.completionOverlayTopPadding(isCompactHeight: verticalSizeClass == .compact))
+            #endif
         }
         .opacity(isVisible ? 1 : 0)
         .animation(.easeInOut(duration: 0.3), value: isVisible)

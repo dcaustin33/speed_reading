@@ -4,10 +4,17 @@ import SwiftUI
 struct ReaderView: View {
     @EnvironmentObject var router: NavigationRouter
     @Environment(\.scenePhase) private var scenePhase
+    #if os(visionOS)
+    @Environment(SpatialNavigationState.self) private var spatialNavState
+    #endif
     let bookId: UUID
 
     @State private var viewModel: ReaderViewModel
     @State private var showMenu = false
+    #if os(visionOS)
+    @State private var ornamentVisible: Bool = true
+    @State private var ornamentHideTask: Task<Void, Never>?
+    #endif
 
     init(bookId: UUID) {
         self.bookId = bookId
@@ -16,8 +23,10 @@ struct ReaderView: View {
 
     var body: some View {
         ZStack {
+            #if !os(visionOS)
             Theme.Colors.background
                 .ignoresSafeArea()
+            #endif
 
             if viewModel.isLoading {
                 loadingView
@@ -46,18 +55,27 @@ struct ReaderView: View {
                         isVisible: viewModel.isCompleted,
                         onDismiss: {
                             viewModel.dismissCompletion()
+                            #if os(visionOS)
+                            viewModel.onDisappear()
+                            spatialNavState.closeReader()
+                            #else
                             router.pop()
+                            #endif
                         }
                     )
                 }
             }
         }
+        #if os(visionOS)
+        .toolbar(.hidden, for: .navigationBar)
+        #else
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 backButton
             }
         }
+        #endif
         .sheet(isPresented: $showMenu) {
             MenuView(bookId: bookId, showMenu: $showMenu, viewModel: viewModel)
         }
@@ -71,6 +89,9 @@ struct ReaderView: View {
         }
         .onDisappear {
             viewModel.onDisappear()
+            #if os(visionOS)
+            ornamentHideTask?.cancel()
+            #endif
         }
         .onChange(of: scenePhase) { oldPhase, newPhase in
             handleScenePhaseChange(from: oldPhase, to: newPhase)
@@ -99,7 +120,11 @@ struct ReaderView: View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 48))
+                #if os(visionOS)
+                .foregroundStyle(.red)
+                #else
                 .foregroundStyle(Theme.Colors.orpHighlight)
+                #endif
                 .accessibilityHidden(true)
 
             Text(message)
@@ -108,12 +133,26 @@ struct ReaderView: View {
                 .padding(.horizontal)
 
             Button("Return to Library") {
+                #if os(visionOS)
+                viewModel.onDisappear()
+                spatialNavState.closeReader()
+                #else
                 router.pop()
+                #endif
             }
+            #if os(visionOS)
+            .buttonStyle(.bordered)
+            .hoverEffect(.highlight)
+            #else
             .foregroundStyle(Theme.Colors.accent)
+            #endif
             .accessibilityLabel("Return to Library")
             .accessibilityHint("Go back to your book list")
         }
+        #if os(visionOS)
+        .padding(32)
+        .glassBackgroundEffect()
+        #endif
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Error: \(message)")
     }
@@ -121,6 +160,9 @@ struct ReaderView: View {
     // MARK: - Reader Content
 
     private var readerContent: some View {
+        #if os(visionOS)
+        visionOSReaderContent
+        #else
         ZStack {
             VStack(spacing: 0) {
                 // Main content area - tap to toggle play/pause
@@ -150,7 +192,136 @@ struct ReaderView: View {
                 }
             )
         }
+        #endif
     }
+
+    // MARK: - visionOS Reader
+
+    #if os(visionOS)
+    private var visionOSReaderContent: some View {
+        ZStack {
+            // Word-only display area
+            ORPDisplayView(
+                word: viewModel.currentWord,
+                orpIndex: viewModel.currentOrpIndex,
+                fontSize: CGFloat(viewModel.fontSize)
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                handleOrnamentInteraction()
+                viewModel.toggle()
+            }
+
+            // Navigation overlay (sentence/paragraph buttons)
+            NavigationOverlayView(
+                isVisible: viewModel.isNavigationOverlayVisible,
+                onPreviousSentence: { viewModel.previousSentence() },
+                onNextSentence: { viewModel.nextSentence() },
+                onPreviousParagraph: { viewModel.previousParagraph() },
+                onNextParagraph: { viewModel.nextParagraph() }
+            )
+        }
+        .ornament(attachmentAnchor: .scene(.bottom), contentAlignment: .center) {
+            readerOrnament
+        }
+        .onChange(of: viewModel.isPlaying) { _, isPlaying in
+            if isPlaying {
+                startOrnamentHideTimer()
+            } else {
+                cancelOrnamentHideTimer()
+                withAnimation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration)) {
+                    ornamentVisible = true
+                }
+            }
+        }
+        .onChange(of: viewModel.isCompleted) { _, isCompleted in
+            if isCompleted {
+                cancelOrnamentHideTimer()
+                withAnimation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration)) {
+                    ornamentVisible = true
+                }
+            }
+        }
+        .onChange(of: viewModel.isScrubbing) { _, isScrubbing in
+            if isScrubbing {
+                cancelOrnamentHideTimer()
+            } else if viewModel.isPlaying {
+                startOrnamentHideTimer()
+            }
+        }
+    }
+
+    private var readerOrnament: some View {
+        HStack(spacing: 12) {
+            TooltipButton(title: "Paragraph", systemImage: "backward.end.fill") {
+                handleOrnamentInteraction()
+                viewModel.previousParagraph()
+            }
+
+            TooltipButton(title: "Sentence", systemImage: "backward.fill") {
+                handleOrnamentInteraction()
+                viewModel.previousSentence()
+            }
+
+            TooltipButton(
+                title: viewModel.isPlaying ? "Pause" : "Play",
+                systemImage: viewModel.isPlaying ? "pause.fill" : "play.fill",
+                iconFont: .title3
+            ) {
+                handleOrnamentInteraction()
+                viewModel.toggle()
+            }
+
+            TooltipButton(title: "Sentence", systemImage: "forward.fill") {
+                handleOrnamentInteraction()
+                viewModel.nextSentence()
+            }
+
+            TooltipButton(title: "Paragraph", systemImage: "forward.end.fill") {
+                handleOrnamentInteraction()
+                viewModel.nextParagraph()
+            }
+
+            TooltipButton(title: "More", systemImage: "ellipsis") {
+                handleOrnamentInteraction()
+                viewModel.pause()
+                showMenu = true
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .glassBackgroundEffect()
+        .opacity(ornamentVisible ? 1 : 0)
+        .allowsHitTesting(ornamentVisible)
+        .animation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration), value: ornamentVisible)
+    }
+
+    private func handleOrnamentInteraction() {
+        withAnimation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration)) {
+            ornamentVisible = true
+        }
+        if viewModel.isPlaying {
+            startOrnamentHideTimer()
+        }
+    }
+
+    private func startOrnamentHideTimer() {
+        ornamentHideTask?.cancel()
+        ornamentHideTask = Task {
+            try? await Task.sleep(for: .seconds(Theme.Animation.ornamentHideDelay))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeInOut(duration: Theme.Animation.navigationOverlayFadeDuration)) {
+                ornamentVisible = false
+            }
+        }
+    }
+
+    private func cancelOrnamentHideTimer() {
+        ornamentHideTask?.cancel()
+        ornamentHideTask = nil
+    }
+    #endif
 
     // MARK: - Tap Area (ORP Display)
 
@@ -268,7 +439,12 @@ struct ReaderView: View {
 
     private var backButton: some View {
         Button {
+            #if os(visionOS)
+            viewModel.onDisappear()
+            spatialNavState.closeReader()
+            #else
             router.pop()
+            #endif
         } label: {
             Image(systemName: "chevron.left")
                 .foregroundStyle(Theme.Colors.primaryText)
