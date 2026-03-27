@@ -104,7 +104,12 @@
 
 ## Phase 3: visionOS Entry Point & Navigation
 
-- [ ] **Task 6: Create SpatialNavigationState and visionOS app entry point**
+- [x] **Task 6: Create SpatialNavigationState and visionOS app entry point**
+  - ✅ Completed: 2026-03-26
+  - Tests: iOS build succeeds, visionOS build succeeds (first full successful visionOS build)
+  - Implementation: Created `SpatialNavigationState.swift` (@Observable @MainActor, selectBook/closeReader). Created `SpeedReadingVisionApp.swift` with #if os(visionOS), dual WindowGroup (library 900x600, reader 600x400), ImmersiveSpace stub. Reader window reads bookId from SpatialNavigationState. Fixed broken visionOS target fileRef IDs in project.pbxproj (46 entries had 2 extra zeros, causing all shared files to be silently excluded from compilation).
+  - Notes: Both new files added to visionOS target only. SpeedReadingVisionApp wrapped in #if os(visionOS) as additional safety. NavigationRouter provided to both windows for backward compat with existing views.
+  - Files changed: `SpeedReadingVisionApp.swift` (new), `SpatialNavigationState.swift` (new), `project.pbxproj`
 
   Create the visionOS-specific navigation state and app entry point with dual WindowGroup (library + reader) and ImmersiveSpace stub for Phase 1B.
 
