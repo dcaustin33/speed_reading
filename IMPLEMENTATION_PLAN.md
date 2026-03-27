@@ -251,7 +251,12 @@
 
 ---
 
-- [ ] **Task 9: Unit Tests for Phase 1B Components**
+- [x] **Task 9: Unit Tests for Phase 1B Components**
+  - ✅ Completed: 2026-03-27
+  - Tests: `tests/SpatialNavigationStateTests.swift` (18 tests), `tests/SpatialBookEntityTests.swift` (7 tests), `tests/SpatialControlBarAutoHideTests.swift` (15 tests) — all 40 passing
+  - Implementation: Created `SpatialControlBarAutoHideTests.swift` with extracted auto-hide state machine model testing all transitions: play/pause show/hide, timer fire, interaction reset, completion override, scrub pause/resume, full lifecycle cycles. Existing navigation state and book entity tests already covered all required subtasks from previous tasks.
+  - Notes: Test files are standalone Swift scripts (not in Xcode project) — they mirror production logic for testability outside RealityKit runtime. Both visionOS and iOS targets build clean with zero regressions.
+  - Files changed: `tests/SpatialControlBarAutoHideTests.swift` (new)
 
   Write unit tests for all new state management and testable logic. Focus on state machines, entity creation, and auto-hide behavior.
 
