@@ -123,7 +123,12 @@
   - Add both new files to visionOS target only (not iOS)
   - Ensure only one file per target has `@main` — iOS uses `SpeedReadingApp.swift`, visionOS uses `SpeedReadingVisionApp.swift`
 
-- [ ] **Task 7: Wire up visionOS library-to-reader navigation**
+- [x] **Task 7: Wire up visionOS library-to-reader navigation**
+  - ✅ Completed: 2026-03-26
+  - Tests: iOS build succeeds (XcodeBuildMCP), visionOS build succeeds (xcodebuild generic destination). No unit tests — pure SwiftUI view wiring with compile-time `#if os(visionOS)` conditionals.
+  - Implementation: Added `@Environment(SpatialNavigationState.self)` and `@Environment(\.openWindow)` to LibraryView; `@Environment(SpatialNavigationState.self)` and `@Environment(\.dismissWindow)` to ReaderView. Wired `handleBookTap` to `selectBook()` + `openWindow(id: "reader")`, back button/completion/error dismiss to `closeReader()` + `dismissWindow(id: "reader")`. ContentView unchanged — NavigationStack still supports non-reader routes (settings, search, TOC).
+  - Notes: ReaderView still takes `bookId` as init param (passed from `navState.selectedBookId` in SpeedReadingVisionApp). No visionOS simulator runtime installed, so tested via generic destination build.
+  - Files changed: `LibraryView.swift`, `ReaderView.swift`
 
   Connect the library book selection to opening the reader in a separate window using `openWindow(id: "reader")`, and wire the back/completion actions to `dismissWindow(id: "reader")`.
 
