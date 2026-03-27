@@ -44,7 +44,9 @@ struct TOCView: View {
                         Image(systemName: "chevron.left")
                         Text("Back")
                     }
+                    #if !os(visionOS)
                     .foregroundStyle(Theme.Colors.accent)
+                    #endif
                 }
                 .accessibilityLabel("Back to menu")
             }
@@ -68,14 +70,37 @@ struct TOCView: View {
     private func chapterList(viewModel: TOCViewModel) -> some View {
         ScrollViewReader { proxy in
             ScrollView {
+                #if os(visionOS)
+                VStack(spacing: 0) {
+                    ForEach(Array(viewModel.chapters.enumerated()), id: \.offset) { index, chapter in
+                        let isCurrent = viewModel.currentChapterIndex == index
+
+                        Button {
+                            viewModel.selectChapter(at: index)
+                            router.popToRoot()
+                            router.navigateTo(.reader(bookId: bookId))
+                        } label: {
+                            chapterRow(chapter: chapter, isCurrent: isCurrent)
+                        }
+                        .buttonStyle(.plain)
+                        .id(index)
+                        .accessibilityLabel("\(chapter.title)\(isCurrent ? ", current chapter" : "")")
+                        .accessibilityHint("Double tap to jump to this chapter")
+
+                        if index < viewModel.chapters.count - 1 {
+                            Divider().padding(.leading, 16)
+                        }
+                    }
+                }
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .padding(24)
+                #else
                 LazyVStack(spacing: 0) {
                     ForEach(Array(viewModel.chapters.enumerated()), id: \.offset) { index, chapter in
                         let isCurrent = viewModel.currentChapterIndex == index
 
                         Button {
                             viewModel.selectChapter(at: index)
-                            // Navigate back to reader with jump position
-                            // Pop to menu, then menu dismisses back to reader
                             router.popToRoot()
                             router.navigateTo(.reader(bookId: bookId))
                         } label: {
@@ -92,9 +117,9 @@ struct TOCView: View {
                     }
                 }
                 .padding(.top)
+                #endif
             }
             .onAppear {
-                // Scroll to current chapter if exists
                 if let currentIndex = viewModel.currentChapterIndex {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         withAnimation {
@@ -123,7 +148,9 @@ struct TOCView: View {
             }
         }
         .padding()
+        #if !os(visionOS)
         .background(Theme.Colors.cardBackground)
+        #endif
     }
 
     // MARK: - Empty State

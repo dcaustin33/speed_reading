@@ -35,7 +35,9 @@ struct SearchView: View {
                 Button("Cancel") {
                     router.pop()
                 }
+                #if !os(visionOS)
                 .foregroundStyle(Theme.Colors.accent)
+                #endif
             }
         }
         #if !os(visionOS)
@@ -133,7 +135,11 @@ struct SearchView: View {
             }
         }
         .padding()
+        #if os(visionOS)
+        .background(.ultraThinMaterial)
+        #else
         .background(Theme.Colors.cardBackground)
+        #endif
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
@@ -185,6 +191,21 @@ struct SearchView: View {
 
             // Results list
             ScrollView {
+                #if os(visionOS)
+                VStack(spacing: 0) {
+                    ForEach(Array(viewModel.results.enumerated()), id: \.element.id) { index, result in
+                        SearchResultRow(result: result) {
+                            selectResult(result)
+                        }
+                        .buttonStyle(.plain)
+                        if index < viewModel.results.count - 1 {
+                            Divider().padding(.leading, 16)
+                        }
+                    }
+                }
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .padding(24)
+                #else
                 LazyVStack(spacing: 12) {
                     ForEach(viewModel.results) { result in
                         SearchResultRow(result: result) {
@@ -193,6 +214,7 @@ struct SearchView: View {
                     }
                 }
                 .padding()
+                #endif
             }
         }
     }
@@ -237,8 +259,10 @@ struct SearchResultRow: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .padding()
+            #if !os(visionOS)
             .background(Theme.Colors.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            #endif
         }
         .accessibilityLabel("Search result at \(Int(result.percentage)) percent")
         .accessibilityHint("Tap to jump to this position")

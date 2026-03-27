@@ -6,7 +6,6 @@ struct ReaderView: View {
     @Environment(\.scenePhase) private var scenePhase
     #if os(visionOS)
     @Environment(SpatialNavigationState.self) private var spatialNavState
-    @Environment(\.dismissWindow) private var dismissWindow
     #endif
     let bookId: UUID
 
@@ -24,8 +23,10 @@ struct ReaderView: View {
 
     var body: some View {
         ZStack {
+            #if !os(visionOS)
             Theme.Colors.background
                 .ignoresSafeArea()
+            #endif
 
             if viewModel.isLoading {
                 loadingView
@@ -55,8 +56,8 @@ struct ReaderView: View {
                         onDismiss: {
                             viewModel.dismissCompletion()
                             #if os(visionOS)
+                            viewModel.onDisappear()
                             spatialNavState.closeReader()
-                            dismissWindow(id: "reader")
                             #else
                             router.pop()
                             #endif
@@ -65,12 +66,16 @@ struct ReaderView: View {
                 }
             }
         }
+        #if os(visionOS)
+        .toolbar(.hidden, for: .navigationBar)
+        #else
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 backButton
             }
         }
+        #endif
         .sheet(isPresented: $showMenu) {
             MenuView(bookId: bookId, showMenu: $showMenu, viewModel: viewModel)
         }
@@ -129,8 +134,8 @@ struct ReaderView: View {
 
             Button("Return to Library") {
                 #if os(visionOS)
+                viewModel.onDisappear()
                 spatialNavState.closeReader()
-                dismissWindow(id: "reader")
                 #else
                 router.pop()
                 #endif
@@ -196,13 +201,12 @@ struct ReaderView: View {
     private var visionOSReaderContent: some View {
         ZStack {
             // Word-only display area
-            GeometryReader { geometry in
-                ORPDisplayView(
-                    word: viewModel.currentWord,
-                    orpIndex: viewModel.currentOrpIndex,
-                    fontSize: CGFloat(viewModel.fontSize)
-                )
-            }
+            ORPDisplayView(
+                word: viewModel.currentWord,
+                orpIndex: viewModel.currentOrpIndex,
+                fontSize: CGFloat(viewModel.fontSize)
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .contentShape(Rectangle())
             .onTapGesture {
                 handleOrnamentInteraction()
@@ -249,108 +253,44 @@ struct ReaderView: View {
     }
 
     private var readerOrnament: some View {
-        VStack(spacing: 8) {
-            // Control buttons row
-            HStack(spacing: 16) {
-                Button {
-                    handleOrnamentInteraction()
-                    viewModel.previousSentence()
-                } label: {
-                    Image(systemName: "backward.fill")
-                        .font(.title3)
-                }
-                .hoverEffect(.highlight)
-                .accessibilityLabel("Previous sentence")
-
-                Button {
-                    handleOrnamentInteraction()
-                    viewModel.toggle()
-                } label: {
-                    Image(systemName: viewModel.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.title2)
-                        .frame(width: 44, height: 44)
-                }
-                .hoverEffect(.highlight)
-                .accessibilityLabel(viewModel.isPlaying ? "Pause" : "Play")
-
-                Button {
-                    handleOrnamentInteraction()
-                    viewModel.nextSentence()
-                } label: {
-                    Image(systemName: "forward.fill")
-                        .font(.title3)
-                }
-                .hoverEffect(.highlight)
-                .accessibilityLabel("Next sentence")
-
-                Divider().frame(height: 24)
-
-                Button {
-                    handleOrnamentInteraction()
-                    viewModel.showParagraphPreview()
-                } label: {
-                    Image(systemName: "text.justify.left")
-                        .font(.title3)
-                }
-                .hoverEffect(.highlight)
-                .accessibilityLabel("Show full paragraph")
-
-                Button {
-                    handleOrnamentInteraction()
-                    viewModel.toggleNavigationOverlay()
-                } label: {
-                    Image(systemName: "arrow.left.arrow.right")
-                        .font(.title3)
-                        .foregroundStyle(viewModel.isNavigationOverlayVisible ? Theme.Colors.accent : .primary)
-                }
-                .hoverEffect(.highlight)
-                .accessibilityLabel("Toggle navigation")
-
-                Button {
-                    handleOrnamentInteraction()
-                    viewModel.pause()
-                    showMenu = true
-                } label: {
-                    Image(systemName: "line.3.horizontal")
-                        .font(.title3)
-                }
-                .hoverEffect(.highlight)
-                .accessibilityLabel("Open menu")
-
-                Divider().frame(height: 24)
-
-                Text("\(viewModel.wpm) WPM")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        HStack(spacing: 12) {
+            TooltipButton(title: "Paragraph", systemImage: "backward.end.fill") {
+                handleOrnamentInteraction()
+                viewModel.previousParagraph()
             }
 
-            // Progress bar
-            ProgressBarView(
-                progress: viewModel.progress,
-                isScrubbing: viewModel.isScrubbing,
-                onScrubStart: {
-                    handleOrnamentInteraction()
-                    viewModel.startScrubbing()
-                },
-                onScrubChange: { position in
-                    viewModel.updateScrubPosition(position)
-                },
-                onScrubEnd: {
-                    viewModel.endScrubbing()
-                }
-            )
+            TooltipButton(title: "Sentence", systemImage: "backward.fill") {
+                handleOrnamentInteraction()
+                viewModel.previousSentence()
+            }
 
-            // Stats row
-            StatsBarView(
-                wpm: viewModel.wpm,
-                timeRemaining: viewModel.remainingTimeFormatted,
-                progressPercentage: viewModel.progressPercentage,
-                chapterTimeRemaining: viewModel.chapterRemainingTimeFormatted
-            )
+            TooltipButton(
+                title: viewModel.isPlaying ? "Pause" : "Play",
+                systemImage: viewModel.isPlaying ? "pause.fill" : "play.fill",
+                iconFont: .title3
+            ) {
+                handleOrnamentInteraction()
+                viewModel.toggle()
+            }
+
+            TooltipButton(title: "Sentence", systemImage: "forward.fill") {
+                handleOrnamentInteraction()
+                viewModel.nextSentence()
+            }
+
+            TooltipButton(title: "Paragraph", systemImage: "forward.end.fill") {
+                handleOrnamentInteraction()
+                viewModel.nextParagraph()
+            }
+
+            TooltipButton(title: "More", systemImage: "ellipsis") {
+                handleOrnamentInteraction()
+                viewModel.pause()
+                showMenu = true
+            }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        .frame(width: 500)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
         .glassBackgroundEffect()
         .opacity(ornamentVisible ? 1 : 0)
         .allowsHitTesting(ornamentVisible)
@@ -500,8 +440,8 @@ struct ReaderView: View {
     private var backButton: some View {
         Button {
             #if os(visionOS)
+            viewModel.onDisappear()
             spatialNavState.closeReader()
-            dismissWindow(id: "reader")
             #else
             router.pop()
             #endif

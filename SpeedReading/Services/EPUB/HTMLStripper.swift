@@ -91,7 +91,7 @@ enum HTMLStripper {
         )
     }
 
-    private static func decodeHTMLEntities(_ text: String) -> String {
+    static func decodeHTMLEntities(_ text: String) -> String {
         var result = text
 
         // Decode numeric entities FIRST, before named entities.

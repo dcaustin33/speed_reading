@@ -6,7 +6,6 @@ struct LibraryView: View {
     @StateObject private var viewModel = LibraryViewModel()
     #if os(visionOS)
     @Environment(SpatialNavigationState.self) private var spatialNavState
-    @Environment(\.openWindow) private var openWindow
     #endif
 
     var body: some View {
@@ -20,7 +19,8 @@ struct LibraryView: View {
                 libraryGridView
             }
 
-            // Floating action button
+            // Floating action button (iOS only)
+            #if !os(visionOS)
             VStack {
                 Spacer()
                 HStack {
@@ -30,6 +30,7 @@ struct LibraryView: View {
                         .padding(.bottom, viewModel.isEditing ? 80 : 24)
                 }
             }
+            #endif
 
             // Loading overlay
             if viewModel.isLoading {
@@ -37,7 +38,11 @@ struct LibraryView: View {
             }
         }
         .navigationTitle("Speed Reading")
+        #if os(visionOS)
+        .navigationBarTitleDisplayMode(.automatic)
+        #else
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .toolbar {
             toolbarContent
         }
@@ -125,9 +130,15 @@ struct LibraryView: View {
                         )
                     }
                 }
+                #if os(visionOS)
+                .padding(.horizontal, 32)
+                .padding(.top, 24)
+                .padding(.bottom, viewModel.isEditing ? 100 : 40)
+                #else
                 .padding(.horizontal, 16)
                 .padding(.top, 16)
                 .padding(.bottom, viewModel.isEditing ? 100 : 80)
+                #endif
             }
         }
     }
@@ -212,17 +223,30 @@ struct LibraryView: View {
         }
 
         ToolbarItem(placement: .topBarTrailing) {
-            if !viewModel.isEmpty {
-                Button(viewModel.isEditing ? "Done" : "Edit") {
-                    if viewModel.isEditing {
-                        viewModel.exitEditMode()
-                    } else {
-                        viewModel.enterEditMode()
-                    }
+            HStack(spacing: 12) {
+                #if os(visionOS)
+                Button {
+                    viewModel.showingDocumentPicker = true
+                } label: {
+                    Image(systemName: "plus")
                 }
-                .foregroundStyle(Theme.Colors.accent)
-                .accessibilityLabel(viewModel.isEditing ? "Done editing" : "Edit library")
-                .accessibilityHint(viewModel.isEditing ? "Exit edit mode" : "Enter edit mode to select and delete books")
+                .accessibilityLabel("Import book")
+                #endif
+
+                if !viewModel.isEmpty {
+                    Button(viewModel.isEditing ? "Done" : "Edit") {
+                        if viewModel.isEditing {
+                            viewModel.exitEditMode()
+                        } else {
+                            viewModel.enterEditMode()
+                        }
+                    }
+                    #if !os(visionOS)
+                    .foregroundStyle(Theme.Colors.accent)
+                    #endif
+                    .accessibilityLabel(viewModel.isEditing ? "Done editing" : "Edit library")
+                    .accessibilityHint(viewModel.isEditing ? "Exit edit mode" : "Enter edit mode to select and delete books")
+                }
             }
         }
     }
@@ -242,7 +266,9 @@ struct LibraryView: View {
             }
         } label: {
             Label("Sort", systemImage: "arrow.up.arrow.down")
+                #if !os(visionOS)
                 .foregroundStyle(Theme.Colors.accent)
+                #endif
         }
         .accessibilityLabel("Sort books")
         .accessibilityHint("Currently sorted by \(viewModel.sortOrder == .recent ? "recently opened" : "title")")
@@ -256,7 +282,6 @@ struct LibraryView: View {
         } else {
             #if os(visionOS)
             spatialNavState.selectBook(book.id)
-            openWindow(id: "reader")
             #else
             router.navigateTo(.reader(bookId: book.id))
             #endif

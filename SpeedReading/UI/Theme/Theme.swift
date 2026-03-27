@@ -44,8 +44,14 @@ enum Theme {
         /// ORP highlight color - Red (#FF3333)
         static let orpHighlight = Color(hex: 0xFF3333)
 
-        /// Slider/progress track color - Dark gray (#404040)
-        static let trackGray = Color(hex: 0x404040)
+        /// Slider/progress track color
+        static let trackGray: Color = {
+            #if os(visionOS)
+            return Color.white.opacity(0.2)
+            #else
+            return Color(hex: 0x404040)
+            #endif
+        }()
 
         /// Bold/highlighted text in search results - White (#FFFFFF)
         static let highlightText = Color.white
@@ -76,6 +82,9 @@ enum Theme {
 
         /// Maximum font size for ORP display
         static let maxFontSize: CGFloat = 96
+
+        /// visionOS ornament width
+        static let ornamentWidth: CGFloat = 360
     }
 
     enum Animation {
@@ -100,6 +109,46 @@ enum Theme {
         static let minimumSwipeDistance: CGFloat = 50
     }
 }
+
+#if os(visionOS)
+/// A button that shows a floating tooltip label above on hover/gaze.
+struct TooltipButton: View {
+    let title: String
+    let systemImage: String
+    var iconFont: Font = .body
+    let action: () -> Void
+
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(iconFont)
+        }
+        .buttonStyle(.borderless)
+        .hoverEffect(.highlight)
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isHovered = hovering
+            }
+        }
+        .overlay(alignment: .top) {
+            if isHovered {
+                Text(title)
+                    .font(.caption2)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.regularMaterial, in: Capsule())
+                    .offset(y: -32)
+                    .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                    .allowsHitTesting(false)
+            }
+        }
+        .accessibilityLabel(title)
+    }
+}
+#endif
 
 extension Color {
     init(hex: UInt, alpha: Double = 1.0) {

@@ -81,7 +81,7 @@ enum NCXParser {
                 let textContent = directContent[textMatch]
                 if let start = textContent.range(of: ">")?.upperBound,
                    let end = textContent.range(of: "</")?.lowerBound {
-                    title = String(textContent[start..<end]).trimmingCharacters(in: .whitespacesAndNewlines)
+                    title = HTMLStripper.decodeHTMLEntities(String(textContent[start..<end]).trimmingCharacters(in: .whitespacesAndNewlines))
                 }
             }
 
@@ -253,7 +253,7 @@ enum NAVParser {
             }
 
             var href = String(content[hrefRange])
-            let title = stripInnerHTML(String(content[titleRange])).trimmingCharacters(in: .whitespacesAndNewlines)
+            let title = HTMLStripper.decodeHTMLEntities(stripInnerHTML(String(content[titleRange])).trimmingCharacters(in: .whitespacesAndNewlines))
 
             // Remove fragment identifier
             if let hashIndex = href.firstIndex(of: "#") {
@@ -289,7 +289,7 @@ enum NAVParser {
             }
 
             var href = String(nav[hrefRange])
-            let title = stripInnerHTML(String(nav[titleRange])).trimmingCharacters(in: .whitespacesAndNewlines)
+            let title = HTMLStripper.decodeHTMLEntities(stripInnerHTML(String(nav[titleRange])).trimmingCharacters(in: .whitespacesAndNewlines))
 
             // Remove fragment identifier
             if let hashIndex = href.firstIndex(of: "#") {

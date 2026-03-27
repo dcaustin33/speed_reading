@@ -20,10 +20,16 @@ struct BookCardView: View {
             // Cover or placeholder
             ZStack(alignment: .topLeading) {
                 coverView
+                    #if os(visionOS)
+                    .frame(height: 200)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                    #else
                     .frame(height: 140)
                     .frame(maxWidth: .infinity)
                     .background(Theme.Colors.cardBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                    #endif
 
                 // Selection indicator in edit mode
                 if isEditing {
@@ -36,7 +42,11 @@ struct BookCardView: View {
             VStack(alignment: .leading, spacing: 4) {
                 // Title - max 2 lines
                 Text(book.title)
+                    #if os(visionOS)
+                    .font(.body.weight(.medium))
+                    #else
                     .font(.subheadline.weight(.medium))
+                    #endif
                     .foregroundStyle(Theme.Colors.primaryText)
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
@@ -44,7 +54,11 @@ struct BookCardView: View {
                 // Author - max 1 line, only if present
                 if let author = book.author, !author.isEmpty {
                     Text(author)
+                        #if os(visionOS)
+                        .font(.subheadline)
+                        #else
                         .font(.caption)
+                        #endif
                         .foregroundStyle(Theme.Colors.secondaryText)
                         .lineLimit(1)
                 }
@@ -53,10 +67,16 @@ struct BookCardView: View {
                 progressBar
             }
         }
-        .contentShape(Rectangle())
         #if os(visionOS)
-        .glassBackgroundEffect()
-        .hoverEffect(.highlight)
+        .padding(16)
+        #endif
+        #if os(visionOS)
+        .glassBackgroundEffect(in: RoundedRectangle(cornerRadius: 20))
+        .hoverEffect { effect, isActive, _ in
+            effect.opacity(isActive ? 1.0 : 0.85)
+        }
+        #else
+        .contentShape(Rectangle())
         #endif
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
@@ -72,7 +92,11 @@ struct BookCardView: View {
         if let image = coverImage {
             image
                 .resizable()
+                #if os(visionOS)
+                .aspectRatio(contentMode: .fill)
+                #else
                 .aspectRatio(contentMode: .fit)
+                #endif
         } else {
             // Placeholder
             VStack {

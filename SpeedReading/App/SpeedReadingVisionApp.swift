@@ -4,28 +4,26 @@ import SwiftUI
 @main
 struct SpeedReadingVisionApp: App {
     @State private var navState = SpatialNavigationState()
-    @StateObject private var router = NavigationRouter()
 
     var body: some Scene {
-        WindowGroup(id: "library") {
-            ContentView()
-                .environmentObject(router)
-                .environment(navState)
-        }
-        .defaultSize(width: 900, height: 600)
-
-        WindowGroup(id: "reader") {
+        WindowGroup {
             Group {
-                if let bookId = navState.selectedBookId {
-                    ReaderView(bookId: bookId)
-                        .environmentObject(NavigationRouter())
+                if navState.isReaderOpen, let bookId = navState.selectedBookId {
+                    ReaderWindowView(bookId: bookId)
+                        .frame(width: 500, height: 125)
+                        .glassBackgroundEffect()
                 } else {
-                    ProgressView("Waiting for book selection...")
+                    ContentView()
+                        .environmentObject(NavigationRouter())
+                        .frame(width: 900, height: 600)
+                        .glassBackgroundEffect()
                 }
             }
             .environment(navState)
         }
-        .defaultSize(width: 600, height: 400)
+        .windowStyle(.plain)
+        .windowResizability(.contentSize)
+        .defaultSize(width: 900, height: 600)
 
         ImmersiveSpace(id: "immersiveReader") {
             Text("Immersive reader — coming in Phase 1B")

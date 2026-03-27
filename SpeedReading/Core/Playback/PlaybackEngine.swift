@@ -442,17 +442,20 @@ class PlaybackEngine {
     }
 
     private func playbackLoopIteration() async {
-        // Check if we should continue
-        guard state == .playing, let doc = document else {
-            print("[Engine] Loop exit early: state=\(state), hasDocument=\(document != nil)")
-            return
-        }
+        // Guard against out-of-bounds: if currentWordIndex >= totalWords (e.g. after
+        // completion set it to totalWords), fire onComplete and bail out. This prevents
+        // a crash if play() is called without resetting the index first.
         guard currentWordIndex < totalWords else {
-            // Reached end
-            print("[Engine] Reached end: currentWordIndex=\(currentWordIndex), totalWords=\(totalWords)")
+            print("[Engine] playbackLoopIteration: index \(currentWordIndex) >= totalWords \(totalWords), firing onComplete")
             state = .paused
             onStateChange?(.paused)
             onComplete?()
+            return
+        }
+
+        // Check if we should continue
+        guard state == .playing, let doc = document else {
+            print("[Engine] Loop exit early: state=\(state), hasDocument=\(document != nil)")
             return
         }
 

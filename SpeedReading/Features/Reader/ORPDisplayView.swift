@@ -26,7 +26,11 @@ struct ORPDisplayView: View {
             let currentChunk = chunks.isEmpty ? nil : chunks[min(currentChunkIndex, chunks.count - 1)]
 
             ZStack {
+                #if os(visionOS)
+                Color.clear
+                #else
                 Theme.Colors.background
+                #endif
 
                 if let chunk = currentChunk {
                     wordDisplay(chunk: chunk, containerWidth: availableWidth)
